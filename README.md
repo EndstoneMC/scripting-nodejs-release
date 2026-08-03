@@ -13,7 +13,7 @@ scripting-nodejs replaces the Bedrock Dedicated Server's built-in QuickJS script
 
 1. Install [Endstone](https://endstone.dev/) v0.11 or newer and start your server once so the folder layout exists.
 2. Download the release archive for your platform from [Releases](https://github.com/EndstoneMC/scripting-nodejs-release/releases).
-3. Drop `endstone_scripting_nodejs.so` (Linux) or `endstone_scripting_nodejs.dll` (Windows) into your server's `plugins/` folder, and put the `scripting_nodejs/` folder that comes with it beside the plugin.
+3. Unzip it over your server root. The archive is rooted there already, so everything lands in `plugins/`: the plugin itself, and a `scripting_nodejs/` folder beside it holding the runtime and npm.
 4. Restart the server.
 
 There is nothing to configure, and your behaviour packs stay exactly as they are.
@@ -24,7 +24,8 @@ There is nothing to configure, and your behaviour packs stay exactly as they are
 * `import` and `import()` of `node:` builtins, npm packages and files on disk
 * Worker threads, so heavy work never costs you tick time
 * Full ICU, for correct internationalisation out of the box
-* Per-pack dependencies — a pack ships its own `node_modules`, and two packs can depend on different versions of the same package
+* npm packages install themselves — declare them in a `package.json` and the plugin installs them when the pack loads, with no Node or npm needed on the server
+* Per-pack dependencies — a pack has its own `node_modules`, and two packs can depend on different versions of the same package
 * `console.log`, `.info`, `.debug`, `.warn` and `.error` reach the server log, formatted the way Node formats them
 * Promises and `await` resolve, because the server pumps the event loop every tick
 * Errors keep their class, their message and a pack-relative stack
@@ -32,6 +33,64 @@ There is nothing to configure, and your behaviour packs stay exactly as they are
 * Script timings and memory figures come off the real engine instead of reading zero
 
 See the [changelog](CHANGELOG.md) for the latest release.
+
+## Using an npm package
+
+Declare what you need in a `package.json` and import it. The plugin installs the dependencies when the pack loads, using the npm that ships inside it — nothing has to be installed on the server, and there is no build step for you to run.
+
+### Where the package.json goes
+
+Three places, each with a different reach. All three are installed, and Node resolves through them in the same order:
+
+| Location | Available to |
+| --- | --- |
+| `behavior_packs/mypack/package.json` | that pack alone |
+| `behavior_packs/package.json` | every pack in that folder |
+| `package.json` in the server root | every pack on the server |
+
+Innermost wins. A pack that declares its own copy of a package gets that copy, whatever the folder above it asks for, so two packs can depend on different versions of one and neither has to care.
+
+A pack's `package.json` sits beside its `manifest.json`, and needs nothing but the dependencies:
+
+```json
+{
+    "dependencies": {
+        "discord.js": "^14.27.0"
+    }
+}
+```
+
+Then import it the way you would anywhere else:
+
+```js
+import { Client } from "discord.js";
+```
+
+The [discord sample](samples/discord/) is a working pack built this way.
+
+### What happens on start-up
+
+When a pack that declares dependencies loads, the plugin runs npm's own installer over each of the three locations that has a `package.json`, **before** the pack's scripts run, and waits for it to finish. So the first start after you add a dependency takes as long as the install does and needs a working network connection; later starts have nothing to do and cost nothing.
+
+The server log says what happened:
+
+```
+Installed behavior_packs/mypack's dependencies from behavior_packs/mypack, behavior_packs.
+```
+
+If an install fails, the failing location and npm's own error are logged, the server carries on, and the pack's imports fail where they are written — so a network outage at start-up costs you that pack, not the server.
+
+### What it does not do
+
+**Lifecycle scripts do not run.** Installs are performed with `ignoreScripts`, so a package that compiles something in a `postinstall` — most native addons — will not build, and a package is not able to run code on your server merely by being depended on. Pure-JavaScript packages, which is the overwhelming majority of npm, are unaffected.
+
+**Nothing is pruned.** A package sitting in `node_modules` that nothing depends on any more is left where it is rather than deleted.
+
+**No audit, no funding notices.** Neither has anywhere to print on a game server.
+
+### Installing by hand instead
+
+You can still run `npm install` in any of those three folders yourself and ship the resulting `node_modules` with the pack. It is the same install engine either way, so the tree is the same one the plugin would have built. Worth doing for a server with no outbound network, or when you want the exact tree pinned and reviewed before it reaches production.
 
 ## Performance
 
