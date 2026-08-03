@@ -1,6 +1,6 @@
-scripting-nodejs
-=====================
-### Run existing Script API addons, with the full Node.js ecosystem
+# scripting-nodejs
+
+**Run existing Script API addons, with the full Node.js ecosystem.**
 
 This repository is for providing feedback, documentation and samples for the **scripting-nodejs** plugin for [Endstone](https://github.com/EndstoneMC/endstone). You can use it to report issues, submit feature requests and share what you have built. The scripting-nodejs codebase is not open-source, but contributions are welcome here in the form of issues, feature requests, samples and feedback — every report is read and shapes what gets built next.
 
@@ -9,8 +9,8 @@ scripting-nodejs replaces the Bedrock Dedicated Server's built-in QuickJS script
 > [!WARNING]
 > The plugin is not ready for production servers, and there are no releases to download yet. Watch this repository for the first release.
 
-Quick Start
-============
+## Quick Start
+
 1. Install [Endstone](https://endstone.dev/) v0.11 or newer and start your server once so the folder layout exists.
 2. Download the release archive for your platform from [Releases](https://github.com/EndstoneMC/scripting-nodejs-release/releases).
 3. Drop `endstone_scripting_nodejs.so` (Linux) or `endstone_scripting_nodejs.dll` (Windows) into your server's `plugins/` folder, and put the `scripting_nodejs/` folder that comes with it beside the plugin.
@@ -18,8 +18,7 @@ Quick Start
 
 There is nothing to configure, and your behaviour packs stay exactly as they are.
 
-Features
-=========
+## Features
 
 * Behaviour-pack scripts run on Node.js, with the same addons and the same `@minecraft/*` imports
 * `import` and `import()` of `node:` builtins, npm packages and files on disk
@@ -34,8 +33,7 @@ Features
 
 See the [changelog](CHANGELOG.md) for the latest release.
 
-Performance
-===============
+## Performance
 
 QuickJS is a bytecode interpreter with no JIT, so script code that does real work runs a lot faster once V8 is underneath it. One behaviour pack, run twice on the same machine — once with the plugin installed, once with it moved aside so BDS keeps its own engine:
 
@@ -54,8 +52,7 @@ The spread matters more than the average. Sorting gains least because the sort i
 
 Measured with Node.js v24.18.0 (V8 13.6) against BDS 1.26.32.2, each benchmark given the same 150 ms of warm-up and 400 ms of measurement on both engines, counting iterations rather than timing a fixed count. Single run per engine, so treat the exact figures as indicative.
 
-Compatibility
-===============
+## Compatibility
 
 | | Supported |
 | --- | --- |
@@ -63,25 +60,26 @@ Compatibility
 | Bedrock Dedicated Server | 1.26.x |
 | Platforms | Linux (x64), Windows (x64) |
 
-Samples
-===============
+## Samples
+
 Sample behaviour packs live in [samples/](samples/). They are ordinary packs — install one the way you install any other, then read the source to see what it does.
 
-Troubleshooting
-===============
+## Troubleshooting
+
 Known issues and guidelines for filing a good report are documented in [TROUBLESHOOTING](TROUBLESHOOTING.md).
 
-Contributing
-===============
+## Contributing
+
 The scripting-nodejs codebase is not open-source, so there is no pull request to send. What helps most is everything else: a clear bug report, a feature request that explains the problem behind it, a sample pack that shows a pattern working, or a correction to these docs. Issues, samples and documentation fixes in this repository are all welcome, and they are what the roadmap is built from.
 
 If you would rather contribute code, [Endstone](https://github.com/EndstoneMC/endstone) itself — the server software this plugin is built on — is open-source and takes pull requests.
 
-Feedback
-===============
+## Feedback
+
 * File a bug or a feature request in [GitHub Issues](https://github.com/EndstoneMC/scripting-nodejs-release/issues/new/choose)
 * Ask a question or share what you have built in [Discussions](https://github.com/EndstoneMC/scripting-nodejs-release/discussions)
 * Chat with us on [Discord](https://discord.gg/xxgPuc2XN9)
 
-# License
+## License
+
 The documentation and samples in this repository are licensed under [Apache-2.0](LICENSE). The plugin itself is distributed under the licence bundled with each release.
