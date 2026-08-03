@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/EndstoneMC/scripting-nodejs-release/discussions
+    about: Ask a question or share what you have built
+  - name: 📚 Endstone Documentation
+    url: https://endstone.dev/
+    about: Guides, API reference and tutorials for Endstone itself
+  - name: 💬 Discord Community
+    url: https://discord.gg/xxgPuc2XN9
+    about: Chat with other Endstone users and developers
+  - name: 🪨 Endstone
+    url: https://github.com/EndstoneMC/endstone
+    about: Issues with the server software rather than the scripting runtime

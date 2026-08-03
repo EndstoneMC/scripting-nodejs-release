@@ -1,0 +1,7 @@
+# Samples
+
+Sample behaviour packs that show what scripting-nodejs makes possible — npm packages, file access, network calls and worker threads from inside a Script API addon.
+
+Each sample is an ordinary behaviour pack. Install one the way you install any other, restart the server, and read its source to see how it works.
+
+Samples are welcome. If you have built something that shows a pattern well, open a pull request or share it in [Discussions](https://github.com/EndstoneMC/scripting-nodejs-release/discussions).
