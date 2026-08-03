@@ -1,0 +1,25 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "Filesystem Example",
+        "description": "Keeps a per-player visit count in a JSON file on disk, using node:fs.",
+        "uuid": "0c497ff5-3a68-4edc-810e-ea387fc755cb",
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 26, 0]
+    },
+    "modules": [
+        {
+            "type": "script",
+            "language": "javascript",
+            "uuid": "65eb19d2-b9d7-4b89-b5b5-775d61148250",
+            "version": [1, 0, 0],
+            "entry": "scripts/main.js"
+        }
+    ],
+    "dependencies": [
+        {
+            "module_name": "@minecraft/server",
+            "version": "2.4.2"
+        }
+    ]
+}
