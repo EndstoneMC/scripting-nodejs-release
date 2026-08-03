@@ -7,5 +7,6 @@ Each sample is an ordinary behaviour pack. Install one the way you install any o
 | Sample | Shows |
 | --- | --- |
 | [filesystem](filesystem/) | Reading and writing a JSON file on disk with `node:fs` |
+| [sqlite](sqlite/) | Per-player block statistics in a queryable database with `node:sqlite` |
 
 Samples are welcome. If you have built something that shows a pattern well, open a pull request or share it in [Discussions](https://github.com/EndstoneMC/scripting-nodejs-release/discussions).
