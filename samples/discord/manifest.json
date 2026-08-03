@@ -1,0 +1,25 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "Discord Example",
+        "description": "Relays joins, chat and leaves to a Discord channel with discord.js.",
+        "uuid": "0d094ece-43f3-467a-9682-0d3ceb17c619",
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 26, 0]
+    },
+    "modules": [
+        {
+            "type": "script",
+            "language": "javascript",
+            "uuid": "a504d916-9183-4351-887c-4fedf1d0d041",
+            "version": [1, 0, 0],
+            "entry": "scripts/main.js"
+        }
+    ],
+    "dependencies": [
+        {
+            "module_name": "@minecraft/server",
+            "version": "beta"
+        }
+    ]
+}
