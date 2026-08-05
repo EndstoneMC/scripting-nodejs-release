@@ -7,7 +7,7 @@ This repository is for providing feedback, documentation and samples for the **s
 scripting-nodejs replaces the Bedrock Dedicated Server's built-in QuickJS script engine with a real [Node.js](https://nodejs.org) runtime, so the behaviour packs you already run keep their `@minecraft/*` imports and gain the whole npm ecosystem behind them.
 
 > [!WARNING]
-> The plugin is not ready for production servers, and there are no releases to download yet. Watch this repository for the first release.
+> **v0.1.0 is a pre-release.** It runs behaviour packs on Node.js on both Linux and Windows servers, and it is not ready for a production server: there is no debugger, a stack overflow reaches the log as an ordinary error with no watchdog event, and a few binding paths still answer `undefined`. The [changelog](CHANGELOG.md) lists what works and what does not, and [TROUBLESHOOTING](TROUBLESHOOTING.md) is worth reading before you file.
 
 ## Quick Start
 

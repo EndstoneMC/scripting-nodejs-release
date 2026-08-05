@@ -23,7 +23,11 @@ If the server crashed, say so explicitly and attach anything in `crash_reports/`
 
 ## Known issues
 
-- **No debugger.** Attaching a JavaScript debugger to a running pack is not supported yet.
+- **No debugger and no profiler.** Attaching a JavaScript debugger to a running pack, setting a breakpoint, stepping, or taking a CPU profile are all unsupported. Debugging is `console.log` and stack traces.
+- **A stack overflow raises no watchdog event.** Runaway recursion is stopped by the engine and reaches the log as a `RangeError`, so there is nothing for an operator to see beyond the error itself.
+- **A Bedrock update can drop the server back to its own engine.** The plugin finds where to install itself by byte pattern, and a BDS update breaks that. The log carries one error line at start-up and your packs run on the built-in engine until a new build ships — so check the log after updating BDS.
+- **Container properties handed back by reference do not work in either direction.** Reading one gives `undefined` and writing one is a silent no-op that reports success. Containers returned from a *method* are unaffected.
+- **A native class the built-in engine makes `for…of`-iterable is not iterable here** — iterating one throws.
 - **Stack frames from npm packages carry absolute paths.** Your pack's own frames are pack-relative, but a package that Node resolved for itself keeps the full path it was found at. If your pack shows a caught error to a player, that path can reach the client.
 - **A pack whose declared module dependency is unsatisfied still loads**, where a stock server would refuse it.
 - **A few binding paths answer `undefined`** instead of the value a stock server returns. If an API returns nothing where you expect an object, that is worth an issue.
