@@ -102,7 +102,8 @@ Stated plainly, so none of them is a surprise.
 - **Script code shares the server tick.** A synchronous loop, a `readFileSync` of a large file, a slow `DatabaseSync` query — anything that blocks — holds the whole server while it runs, exactly as on the built-in engine. Use the asynchronous APIs, batch your work, or move it to a [worker thread](samples/worker-threads/).
 - **`process.exit()` does not stop the server.** It throws `process.exit() is not available to behaviour packs; the server keeps running.`, which the pack can catch, and nothing else stops.
 - **A Bedrock update can leave the plugin behind.** See [Before you update Endstone](#compatibility).
-- **No CPU profiler.** You cannot take a CPU profile of a pack. Debugging is `console.log` and stack traces.
+- **No script debugger yet.** Mojang's VS Code debugger cannot attach to packs running on Node.js; debugging is `console.log` and stack traces.
+- **No CPU profiler.** You cannot take a CPU profile of a pack.
 - **The script watchdog applies, with a few differences.** A script that runs past `script-watchdog-hang-threshold` is interrupted and reported, a pack past `script-watchdog-memory-limit` is stopped, and an uncaught stack overflow is reported, all as on the built-in engine; by default the server then shuts down. The differences: a stack overflow your own code catches is not reported; the memory limit applies to each pack separately and counts only the pack's JavaScript heap; and worker threads are not watched.
 - **A few Script API paths are not finished.** A few container properties read `undefined` and ignore writes.
 - **npm packages that need a build step do not work.** Install scripts are not run, so native addons such as `better-sqlite3`, `bcrypt` or `sharp` install but fail to load. Pure-JavaScript packages — most of npm — are unaffected, and `node:sqlite` is built in.
