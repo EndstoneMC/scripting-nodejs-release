@@ -7,7 +7,7 @@ scripting-nodejs is a plugin for [Endstone](https://github.com/EndstoneMC/endsto
 This repository is where you download it, read about it, report problems and share what you build. The plugin itself is closed source; the documentation and samples here are open.
 
 > [!NOTE]
-> **scripting-nodejs is a pre-release.** It runs behaviour packs on Linux and Windows servers, and a handful of things are not finished yet — they are listed under [sharp edges](#sharp-edges). Try it on a test server before your live one.
+> scripting-nodejs runs behaviour packs on Linux and Windows servers. A few things are not finished yet; they are listed under [sharp edges](#sharp-edges). Try it on a test server before your live one.
 
 ## Why
 

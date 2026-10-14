@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Added one start-up line saying which Node.js the scripts run on and which Bedrock versions are supported.
 - Added the plugin's licence and the third-party notices to the release archive.
 - Native iterable classes such as `BlockLocationIterator` now work with `for...of` and spread.
+- A native object's list properties now read and write the live list, as on the built-in engine.
+- `/script profiler start` and `/script profiler stop` now record a CPU profile of pack scripts, saved where Bedrock saves its own profiles.
 
 ### Changed
 
@@ -46,6 +48,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Fixed a pack whose top level waits for a later tick being reported as failed to load.
 - Fixed child processes started by name, such as `execFile("uname")`, failing with `ENOENT` on Linux.
 - Fixed an error from a missing library being reported as a missing file.
+- Fixed `unsubscribe` not stopping the callback.
+- Fixed a `setImmediate` callback that throws an error shutting the server down.
 
 ## [0.1.0] - 2026-08-05
 
