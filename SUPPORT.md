@@ -22,4 +22,4 @@ If the server crashed, say so in the title and attach the newest file in `crash_
 
 ## Support policy
 
-scripting-nodejs is a pre-release, supported through the channels above on a best-effort basis. Fixes ship in new releases, and each release is tested on the Bedrock versions listed in the [compatibility table](README.md#compatibility).
+scripting-nodejs is supported through the channels above. Fixes ship in new releases, and each release is tested on the Bedrock versions listed in the [compatibility table](README.md#supported-versions).

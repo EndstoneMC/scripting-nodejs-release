@@ -22,7 +22,7 @@ Run `/nodejs` in the console: it says whether scripts run on Node.js (`Node.js: 
 Error occurred when trying to load plugin 'scripting_nodejs': plugin was compiled for Endstone API version: 0.11, but the server has an incompatible API version: 0.12.
 ```
 
-your Endstone is newer than this release supports; see the [compatibility table](README.md#compatibility).
+your Endstone is newer than this release supports; see the [compatibility table](README.md#supported-versions).
 
 **`Loading scripting_nodejs`, then an error.** The error names the problem; find it in the [message reference](#message-reference). The usual ones:
 
@@ -40,7 +40,7 @@ After updating Endstone, packs that import `node:` modules or npm packages fail 
 [Scripting] [Seen] ReferenceError: Import [dayjs.js] not found.
 ```
 
-because the server is back on the built-in engine, which has neither. (The `.js` on the end is the built-in engine's doing.) Look further up the log for `scripting-nodejs could not hook into this Bedrock server` — it means the plugin could not attach to the Bedrock version the new Endstone runs. Go back to an Endstone version in the [compatibility table](README.md#compatibility) (`pip install endstone==0.11.14` if you installed it with pip), or report it.
+because the server is back on the built-in engine, which has neither. (The `.js` on the end is the built-in engine's doing.) Look further up the log for `scripting-nodejs could not hook into this Bedrock server` — it means the plugin could not attach to the Bedrock version the new Endstone runs. Go back to an Endstone version in the [compatibility table](README.md#supported-versions) (`pip install endstone==0.11.14` if you installed it with pip), or report it.
 
 ## npm packages
 
@@ -87,7 +87,7 @@ The path is relative to your server folder, and the two numbers are the line and
 
 **A line starting `[<pack>] Warning: [CODE] …`.** Node.js printed a warning about the pack. The most common is `[MODULE_TYPELESS_PACKAGE_JSON]`, for a `.js` file Node.js loaded itself, such as a worker: give that file the `.mjs` extension, or add `"type": "module"` to the pack's `package.json`.
 
-**It works on the built-in engine and not here.** Check the [sharp edges](README.md#sharp-edges) — a few container properties are the usual suspect — and if it is not that, please [report it](#filing-an-issue) with the smallest pack that shows it.
+**It works on the built-in engine and not here.** Check the [known limitations](README.md#known-limitations), and if it is not one of those, please [report it](#filing-an-issue) with the smallest pack that shows it.
 
 ## The server stalls or freezes
 
