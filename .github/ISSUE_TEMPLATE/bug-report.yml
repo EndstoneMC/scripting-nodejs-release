@@ -1,0 +1,71 @@
+name: Bug report
+description: Something does not work the way it should, or the server crashed.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. [TROUBLESHOOTING](https://github.com/EndstoneMC/scripting-nodejs-release/blob/main/TROUBLESHOOTING.md) lists every message the plugin prints and what to do about it, so a quick look there may already have your answer.
+  - type: input
+    id: plugin-version
+    attributes:
+      label: scripting-nodejs version
+      description: Run `version scripting_nodejs` in the server console.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: endstone-version
+    attributes:
+      label: Endstone and Minecraft versions
+      description: Run `version` in the server console and paste what it prints.
+      placeholder: "This server is running Endstone version: 0.11.14 (Minecraft: 26.52)"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - Windows
+        - Docker
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: Operating system version
+      placeholder: "Ubuntu 24.04, Windows 11, Debian 12 …"
+  - type: dropdown
+    id: without-plugin
+    attributes:
+      label: Does it also happen without the plugin?
+      description: Move `plugins/endstone_scripting_nodejs.so` (`.dll` on Windows) out of the folder, restart, and try again.
+      options:
+        - Not checked
+        - It works without the plugin and fails with it
+        - It fails the same way without the plugin
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened, and what you expected
+      description: Steps to reproduce, if it takes more than loading the pack below.
+    validations:
+      required: true
+  - type: textarea
+    id: pack
+    attributes:
+      label: The smallest pack or script that shows it
+      description: Paste the script, or attach a zip of the pack. List any npm packages it uses, with their versions.
+      render: js
+  - type: textarea
+    id: log
+    attributes:
+      label: Server log
+      description: From the first line of start-up to `Server started.`, plus the lines around the failure. If the server crashed, attach the newest file in `crash_reports/` as well.
+      render: text
+    validations:
+      required: true
