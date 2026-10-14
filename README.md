@@ -47,7 +47,7 @@ There is nothing to configure.
 The start-up log has one line from the plugin saying which Node.js your scripts run on:
 
 ```
-[scripting-nodejs] Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0, for Bedrock 1.26.51.1 and 1.26.52.3.
+[scripting-nodejs] Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0, for Bedrock 1.26.51 and 1.26.52.
 ```
 
 Run `/nodejs` in the console, or in game as an operator, for the same answer with each pack's memory use and the watchdog settings.
