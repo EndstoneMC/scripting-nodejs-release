@@ -5,8 +5,8 @@ import { Client, escapeMarkdown, Events, GatewayIntentBits } from "discord.js";
 
 import { system, world } from "@minecraft/server";
 
-const DATA_DIR = "data";
-const CONFIG_FILE = join(DATA_DIR, "discord.json");
+const DATA_DIR = join("pack_data", "discord");
+const CONFIG_FILE = join(DATA_DIR, "config.json");
 const FLUSH_INTERVAL_TICKS = 40;
 const MAX_MESSAGE_LENGTH = 1900;
 

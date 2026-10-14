@@ -4,7 +4,7 @@ import { DatabaseSync } from "node:sqlite";
 
 import { system, world } from "@minecraft/server";
 
-const DATA_DIR = "data";
+const DATA_DIR = join("pack_data", "stats");
 const DATA_FILE = join(DATA_DIR, "stats.db");
 const FLUSH_INTERVAL_TICKS = 100;
 

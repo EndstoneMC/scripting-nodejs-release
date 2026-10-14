@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { world } from "@minecraft/server";
 
-const DATA_DIR = "data";
+const DATA_DIR = join("pack_data", "visits");
 const DATA_FILE = join(DATA_DIR, "visits.json");
 
 function load() {

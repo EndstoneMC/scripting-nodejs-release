@@ -2,17 +2,22 @@
 
 Stores per-player statistics in a real database, using `node:sqlite`.
 
-The pack counts the blocks each player breaks and places, and keeps the totals in `data/stats.db`, next to your server executable. Join and it tells you how many of each you have, and which three blocks you break and place most. The counts survive a restart, and unlike a JSON file they can be queried — "who has placed the most stone" is one `SELECT` away, over any number of players.
+The pack counts the blocks each player breaks and places, and keeps the totals in `pack_data/stats/stats.db`, in your server folder. Join and it tells you how many of each you have, and which three blocks you break and place most. The counts survive a restart, and unlike a JSON file they can be queried — "who has placed the most stone" is one `SELECT` away, over any number of players.
 
-`node:sqlite` is built into the Node.js runtime the plugin ships, so this sample needs no `npm install` and no native addon. On the stock engine there is no database of any kind, and no way to reach one.
+`node:sqlite` is built into the Node.js runtime the plugin ships, so this sample needs no npm package and no native addon. On the built-in engine there is no database of any kind, and no way to reach one.
 
 ## Running it
 
-1. Copy the `sqlite` folder into your world's `behavior_packs/` folder.
-2. Add it to the world's `world_behavior_packs.json`, or enable it from the world settings screen.
-3. Restart the server, join, and break and place some blocks.
+1. Install the pack as described in the [samples README](../README.md#trying-a-sample).
+2. Restart the server, join, and break and place some blocks.
 
-You can open `data/stats.db` with any SQLite client while the server is running:
+The log confirms the database is open:
+
+```
+[Scripting] stats: pack_data/stats/stats.db ready
+```
+
+You can open `pack_data/stats/stats.db` with any SQLite client while the server is running:
 
 ```sql
 SELECT player_name, action, SUM(count) AS total
