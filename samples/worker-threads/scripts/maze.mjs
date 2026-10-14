@@ -1,6 +1,3 @@
-// Runs on the worker thread. No @minecraft/server here: the Script API belongs to the
-// server thread, and this file never touches the world — it only turns numbers into a grid.
-
 import { parentPort, workerData } from "node:worker_threads";
 
 const WALL = 1;
@@ -8,7 +5,6 @@ const PATH = 0;
 
 const { size, attempts, seed } = workerData;
 
-// Seeded so the same request builds the same maze twice.
 function random(state) {
     return () => {
         state = (state + 0x6d2b79f5) | 0;
@@ -18,8 +14,6 @@ function random(state) {
     };
 }
 
-// Randomised depth-first carving: every cell ends up reachable, and there is exactly one
-// route between any two of them.
 function carve(next) {
     const cells = new Uint8Array(size * size).fill(WALL);
     const stack = [size + 1];
@@ -52,7 +46,6 @@ function carve(next) {
     return cells;
 }
 
-// Breadth-first from the near corner to the far one, so "hardest" means a long walk.
 function solve(cells) {
     const start = size + 1;
     const goal = (size - 2) * size + (size - 2);
@@ -89,8 +82,6 @@ const next = random(seed);
 
 let best = null;
 
-// The whole point of the worker: this loop runs for as long as it takes, on its own thread,
-// while the server keeps ticking.
 for (let attempt = 0; attempt < attempts; attempt++) {
     const cells = carve(next);
     const solution = solve(cells);
@@ -100,7 +91,6 @@ for (let attempt = 0; attempt < attempts; attempt++) {
     }
 }
 
-// The grid is transferred rather than copied: the buffer changes owner, nothing is duplicated.
 parentPort.postMessage(
     { size, attempts, solution: best.solution, ms: Date.now() - startedAt, cells: best.cells },
     [best.cells.buffer],

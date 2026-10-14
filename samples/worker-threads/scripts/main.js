@@ -1,14 +1,9 @@
-// Searches for a hard maze on a worker thread, then builds it in the world a few blocks per
-// tick. Neither half runs on the tick for longer than it should: the search is pure CPU on
-// another thread, and the building is a job the server paces itself.
-
+import { dirname, resolve } from "node:path";
 import { Worker } from "node:worker_threads";
 
-import { BlockPermutation, system, world } from "@minecraft/server";
+import { BlockPermutation, system } from "@minecraft/server";
 
-// `import.meta.dirname` is undefined for a pack module, so the worker file is located by
-// asking the loader to resolve it. That answers an absolute URL, which is what `Worker` needs.
-const WORKER = new URL(import.meta.resolve("./maze.js"));
+const WORKER = resolve(dirname(import.meta.url), "maze.mjs");
 
 const WALL = 1;
 const WALL_BLOCK = "minecraft:stone_bricks";
@@ -16,11 +11,13 @@ const WALL_HEIGHT = 2;
 const DEFAULT_SIZE = 31;
 const DEFAULT_ATTEMPTS = 10000;
 
-// A worker's message arrives on a libuv callback rather than inside a tick, so finished
-// mazes wait here. Everything that touches the world happens on the interval below.
-const finished = [];
-
-let ticks = 0;
+function tell(player, text) {
+    if (player) {
+        player.sendMessage(text);
+    } else {
+        console.log(`maze: ${text}`);
+    }
+}
 
 function clamp(value, fallback, low, high) {
     const parsed = Number.parseInt(value, 10);
@@ -40,7 +37,6 @@ function* build(maze, origin, dimension) {
                 dimension.getBlock({ x: origin.x + x, y: origin.y + y, z: origin.z + z })?.setPermutation(wall);
             }
 
-            // Yielding hands the tick back. BDS decides how much of the job to run each time.
             yield;
         }
     }
@@ -51,45 +47,34 @@ system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity }) 
         return;
     }
 
-    const player = sourceEntity;
-    if (player === undefined) {
-        console.warn("maze: run this as a player — the maze is built where you stand");
-        return;
-    }
-
+    const player = sourceEntity?.typeId === "minecraft:player" ? sourceEntity : undefined;
     const [sizeArg, attemptsArg] = message.split(" ");
-    const size = clamp(sizeArg, DEFAULT_SIZE, 11, 101) | 1; // a maze needs odd dimensions
+    const size = clamp(sizeArg, DEFAULT_SIZE, 11, 101) | 1;
     const attempts = clamp(attemptsArg, DEFAULT_ATTEMPTS, 1, 100000);
-    const origin = {
+    const origin = player && {
         x: Math.floor(player.location.x),
         y: Math.floor(player.location.y),
         z: Math.floor(player.location.z),
     };
 
-    player.sendMessage(`Searching ${attempts} mazes for the hardest ${size}×${size}…`);
+    tell(player, `Searching ${attempts} mazes for the hardest ${size}×${size}…`);
 
+    const startedAt = system.currentTick;
     const worker = new Worker(WORKER, { workerData: { size, attempts, seed: Date.now() } });
-    const startedAt = ticks;
 
-    worker.on("message", (maze) => finished.push({ maze, player, origin, startedAt }));
+    worker.on("message", (maze) => {
+        const summary =
+            `Best of ${maze.attempts}: a ${maze.solution}-step path, found in ${maze.ms} ms ` +
+            `while the server ticked ${system.currentTick - startedAt} times.`;
+
+        if (player?.isValid) {
+            player.sendMessage(`${summary} Building…`);
+            system.runJob(build(maze, origin, player.dimension));
+        } else {
+            console.log(`maze: ${summary}`);
+        }
+    });
     worker.on("error", (err) => console.error(`maze: the worker failed: ${err}`));
 });
 
-system.runInterval(() => {
-    ticks += 1;
-
-    while (finished.length > 0) {
-        const { maze, player, origin, startedAt } = finished.shift();
-
-        player.sendMessage(
-            `Best of ${maze.attempts}: a ${maze.solution}-step path, found in ${maze.ms} ms ` +
-                `while the server ticked ${ticks - startedAt} times. Building…`,
-        );
-
-        system.runJob(build(maze, origin, player.dimension));
-    }
-}, 1);
-
-world.afterEvents.worldLoad.subscribe(() => {
-    console.log("maze: run /scriptevent maze:build [size] [attempts] in game");
-});
+console.log("maze: run /scriptevent maze:build [size] [attempts] as a player to build one, or from the console to search only");
