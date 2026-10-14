@@ -1,0 +1,25 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "HTTP Status",
+        "description": "Serves the server's players and tick rate as JSON at http://127.0.0.1:8787/status.",
+        "uuid": "07ee1341-b622-4200-a6c4-449dc99c74df",
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 26, 0]
+    },
+    "modules": [
+        {
+            "type": "script",
+            "language": "javascript",
+            "uuid": "0b98c6de-9e9b-4a64-8510-642cc3641be3",
+            "version": [1, 0, 0],
+            "entry": "scripts/main.js"
+        }
+    ],
+    "dependencies": [
+        {
+            "module_name": "@minecraft/server",
+            "version": "2.4.2"
+        }
+    ]
+}
