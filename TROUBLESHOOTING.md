@@ -89,7 +89,7 @@ The path is relative to your server folder, and the two numbers are the line and
 
 ## The server stalls, or will not stop
 
-**The server freezes and never recovers.** A pack's event handler or `system.run` callback is stuck in a loop. The built-in engine's watchdog would interrupt it after `script-watchdog-hang-threshold`; scripting-nodejs does not, so the server waits for it. Restart the server, and find the pack by detaching packs from the world until the freeze stops.
+**The server freezes and never recovers.** A pack's script is stuck in a loop — at its top level while it loads, in an event handler, or in a `system.run` callback. The built-in engine's watchdog would interrupt it after `script-watchdog-hang-threshold`; scripting-nodejs does not, so the server waits for it. Restart the server, and find the pack by detaching packs from the world until the freeze stops.
 
 **The server freezes for a moment, or players see lag, while a pack works.** A pack's scripts run on the server thread, between the server's own work, so anything that blocks — a long loop, a synchronous file read, a large `DatabaseSync` query — holds the server until it finishes. Use the asynchronous APIs (`fs/promises`, `fetch`), spread work over ticks with `system.runJob`, or move it to a [worker thread](samples/worker-threads/).
 
@@ -132,7 +132,7 @@ Lines the plugin itself prints, all prefixed `[Scripting]`.
 | `Installing <pack>'s dependencies failed: <folder>: <reason>` | npm could not install that folder's `package.json`. | See [npm packages](#npm-packages). |
 | `Installed <pack>'s dependencies from <folders>.` | The npm packages those folders list are in place. | Nothing. |
 | `Could not run [<script>], a top-level await did not settle within the load. …` | See [errors](#errors-from-a-packs-scripts). | Move the wait out of the pack's top level. |
-| `Could not run [<script>], execution was terminated.` | The pack's loading was stopped by the script watchdog — it ran past `script-watchdog-hang-threshold`, or past the memory limit. | Find the loop or the allocation at the pack's top level; raise the threshold only if the work is genuinely that long. |
+| `Could not run [<script>], execution was terminated.` | The pack was stopped while it loaded, for example because it went past `script-watchdog-memory-limit`. | Find the allocation at the pack's top level, or raise the limit if the pack genuinely needs more. |
 | `Could not run [<script>], the loader failed without an exception.` | The pack failed to load with no error to show. | [Report it](#filing-an-issue) with the pack. |
 | `Native type conversion has no branch for the pointer-like type [<type>]; it will not marshal as what it points to.` | A Script API value of that type cannot reach scripts yet, and reads as `undefined`. | [Report it](#filing-an-issue) with the line; it names exactly what is missing. |
 
