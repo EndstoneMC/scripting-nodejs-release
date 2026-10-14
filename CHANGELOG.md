@@ -6,14 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-14
+
 ### Added
 
 - Added support for Bedrock Dedicated Server 1.26.51 and 1.26.52, which Endstone 0.11.11 to 0.11.14 run.
+- Added the `/nodejs` command, which shows the versions, the engine, each pack's memory use and the watchdog settings, to operators by default.
+- Added one start-up line saying which Node.js the scripts run on and which Bedrock versions are supported.
+- Added the plugin's licence and the third-party notices to the release archive.
+- Native iterable classes such as `BlockLocationIterator` now work with `for...of` and spread.
 
 ### Changed
 
-- `/reload` is refused while the plugin is installed, with a message saying to restart the server instead, rather than crashing it (#3).
-- The start-up error says whether the plugin's runtime files are missing or present but unable to load, and on Windows gives the reason as text rather than an error number.
+- The plugin's log lines are now prefixed `[scripting-nodejs]`.
+- On an unsupported Bedrock version the plugin prints one line naming the supported versions.
+- A missing, mismatched or unloadable `plugins/scripting_nodejs/` folder is reported in plain words, with the system's reason as text on Windows.
+- npm packages are installed once per folder per start, give up after 60 seconds, and print one line saying what happened.
+- An import that finds nothing reads as it does on the built-in engine, without Node.js internals in the error.
+- A `@minecraft/*` module whose own dependencies are not met is refused at import, as on the built-in engine.
+- `process.exit()` throws an error the pack can catch instead of being abandoned.
+- Warnings from Node.js and output to `process.stdout` and `process.stderr` reach the server log.
+- Scripts get the same stack depth as the built-in engine.
 
 ### Removed
 
@@ -21,8 +34,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Fixed a script that never returns freezing the server; it is now interrupted at `script-watchdog-hang-threshold`, as on the built-in engine.
+- Fixed `script-watchdog-memory-limit` not being enforced on scripts.
+- Fixed a stack overflow going unreported to the script watchdog.
 - Fixed the plugin failing to load on Linux servers that do not have the LLVM C++ runtime installed, such as a fresh Ubuntu 24.04 (#2).
 - Fixed the server crashing when a pack imports certain npm packages, such as `mongodb` (#1).
+- Fixed the server crashing on `/reload` (#3).
+- Fixed npm packages being given a pack's own script when they import a built-in module or a file of the same name.
+- Fixed `process.exit()` and an uncaught error in a timer stopping the pack's timers and network callbacks.
+- Fixed a pack that reads `process.stdin` shutting the server down.
+- Fixed a pack whose top level waits for a later tick being reported as failed to load.
+- Fixed child processes started by name, such as `execFile("uname")`, failing with `ENOENT` on Linux.
+- Fixed an error from a missing library being reported as a missing file.
 
 ## [0.1.0] - 2026-08-05
 
@@ -41,5 +64,6 @@ The first release, and a pre-release.
 - The server's script timings, memory figures and `Slow`, `Spike`, `Hang` and high-memory watchdog events come from the real engine.
 - Stack traces from a pack built with a bundler that records debug ids can be mapped back to the original sources.
 
-[Unreleased]: https://github.com/EndstoneMC/scripting-nodejs-release/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/EndstoneMC/scripting-nodejs-release/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/EndstoneMC/scripting-nodejs-release/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.1.0
