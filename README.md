@@ -44,12 +44,13 @@ There is nothing to configure.
 
 ### Check that it is active
 
-The start-up log names Node.js, with no error line after it:
+The start-up log has one line from the plugin saying which Node.js your scripts run on:
 
 ```
-[Scripting] Loading scripting_nodejs v0.1.0
-[Scripting] Initializing Node.js v24.18.0 (LTS) (v8: 13.6.233.17).
+[scripting-nodejs] Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0, for Bedrock 1.26.51.1 and 1.26.52.3.
 ```
+
+Run `/nodejs` in the console, or in game as an operator, for the same answer with each pack's memory use and the watchdog settings.
 
 For a definite answer, install the [engine-check sample](samples/engine-check/). It logs which engine runs your packs' scripts:
 
@@ -65,18 +66,18 @@ Each release of scripting-nodejs supports specific versions of the Bedrock Dedic
 
 | scripting-nodejs | Bedrock Dedicated Server | Endstone | Platforms |
 | --- | --- | --- | --- |
-| next release | 1.26.51, 1.26.52 | 0.11.11 – 0.11.14 | Linux x64, Windows x64 |
+| [0.2.0](https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.2.0) | 1.26.51, 1.26.52 | 0.11.11 – 0.11.14 | Linux x64, Windows x64 |
 | [0.1.0](https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.1.0) | 1.26.3x – 1.26.4x | 0.11.5 – 0.11.10 | Linux x64¹, Windows x64 |
 
-¹ 0.1.0 on Linux loads only where the LLVM C++ runtime (`libc++.so.1`) is installed; the next release carries its own.
+¹ 0.1.0 on Linux loads only where the LLVM C++ runtime (`libc++.so.1`) is installed; 0.2.0 carries its own.
 
-Linux means the distributions Endstone supports (Ubuntu 22.04 or newer, Debian 12 or newer). On macOS and ARM machines Endstone runs under Docker emulation, which scripting-nodejs has not been tested under.
+Linux means Ubuntu 22.04 or newer and Debian 12 or newer (glibc 2.35 or newer). Older distributions that run Endstone, such as Ubuntu 20.04 and Debian 11, do not run this plugin. On macOS and ARM machines Endstone runs under Docker emulation, which scripting-nodejs has not been tested under.
 
-**Before you update Endstone**, check that the version you are moving to is in the table. On a Bedrock version the plugin does not support, it logs one error at start-up and your packs run on the built-in engine — so packs that use Node.js features stop loading until a scripting-nodejs release supports it. If you install Endstone with pip, you can stay on a version with `pip install endstone==0.11.14`.
+**Before you update Endstone**, check that the version you are moving to is in the table. On a Bedrock version the plugin does not support, it logs one error at start-up naming the supported versions, and your packs run on the built-in engine — so packs that use Node.js features stop loading until a scripting-nodejs release supports it. If you install Endstone with pip, you can stay on a version with `pip install endstone==0.11.14`.
 
 ## What changes for a pack
 
-**Nothing you have to do.** A pack that runs on a stock Bedrock server runs here unchanged: same `manifest.json`, same `@minecraft/*` modules and versions, same events and errors. The script watchdog is the exception — see [sharp edges](#sharp-edges).
+**Nothing you have to do.** A pack that runs on a stock Bedrock server runs here unchanged: same `manifest.json`, same `@minecraft/*` modules and versions, same events and errors.
 
 **What a pack can now do:**
 
@@ -99,18 +100,15 @@ Stated plainly, so none of them is a surprise.
 
 - **A pack can do anything the server can.** On a stock server a pack is sandboxed. Here it can read and write any file the server's user can, connect anywhere, and start programs. Install packs only from people you trust, and run the server as a user that owns nothing else.
 - **Script code shares the server tick.** A synchronous loop, a `readFileSync` of a large file, a slow `DatabaseSync` query — anything that blocks — holds the whole server while it runs, exactly as on the built-in engine. Use the asynchronous APIs, batch your work, or move it to a [worker thread](samples/worker-threads/).
-- **`process.exit()` does not stop the server.** The call is abandoned with `Error: null` in the log, the pack's timers and network and file callbacks stop for good, and its Script API event handlers carry on. Do not call it.
-- **`/reload` is refused** while the plugin is installed, with a message saying to restart instead. Restart the server to reload plugins and packs. *(0.1.0 does not refuse it, and a `/reload` there can crash the server.)*
+- **`process.exit()` does not stop the server.** It throws `process.exit() is not available to behaviour packs; the server keeps running.`, which the pack can catch, and nothing else stops.
 - **A Bedrock update can leave the plugin behind.** See [Before you update Endstone](#compatibility).
-- **No debugger and no profiler yet.** You cannot attach a debugger to a pack, set a breakpoint or take a CPU profile; Bedrock's own `/script profiler` starts but cannot save a profile. Debugging is `console.log` and stack traces.
-- **A script that never returns freezes the server.** On the built-in engine the script watchdog interrupts a script that runs past `script-watchdog-hang-threshold`, and by default shuts the server down. On scripting-nodejs a script that loops forever — at the top of a pack, in an event handler or in a `system.run` callback — is not interrupted, and holds the server until it is restarted.
-- **Runaway recursion raises no watchdog event.** It stops with an ordinary `RangeError: Maximum call stack size exceeded` and the server keeps running, where the built-in engine's watchdog shuts it down by default.
-- **A few Script API paths are not finished.** Iterating a native collection with `for…of` throws, and a few container properties read `undefined` and ignore writes. A `@minecraft/*` module whose own dependencies are not met can still be imported, where a stock server refuses it.
+- **No CPU profiler.** You cannot take a CPU profile of a pack. Debugging is `console.log` and stack traces.
+- **The script watchdog applies, with a few differences.** A script that runs past `script-watchdog-hang-threshold` is interrupted and reported, a pack past `script-watchdog-memory-limit` is stopped, and an uncaught stack overflow is reported, all as on the built-in engine; by default the server then shuts down. The differences: a stack overflow your own code catches is not reported; the memory limit applies to each pack separately and counts only the pack's JavaScript heap; and worker threads are not watched.
+- **A few Script API paths are not finished.** A few container properties read `undefined` and ignore writes.
 - **npm packages that need a build step do not work.** Install scripts are not run, so native addons such as `better-sqlite3`, `bcrypt` or `sharp` install but fail to load. Pure-JavaScript packages — most of npm — are unaffected, and `node:sqlite` is built in.
 - **An error from inside an npm package names your server's folder.** Your pack's own stack frames are relative, but frames inside `node_modules` carry the full path, so a pack that shows a caught error to a player can show them where your server lives.
 - **Stack traces point at the JavaScript your pack ships.** A pack compiled from TypeScript gets frames in the compiled output, not in the `.ts` sources.
-- **The script memory limit is not enforced.** On the built-in engine a pack that goes past `script-watchdog-memory-limit` is stopped, and by default the server shuts down. On scripting-nodejs the pack keeps allocating, so a pack that leaks memory grows until something else stops it. Keep an eye on the server's memory use.
-- **Windows has had less time on real servers than Linux.** In particular, the next release's support for Bedrock 1.26.51 and 1.26.52 has been checked on Windows but not yet run on a Windows server. Windows reports are especially welcome.
+- **Windows has had less time on real servers than Linux.** In particular, 0.2.0's support for Bedrock 1.26.51 and 1.26.52 has been run on a Linux server but not yet on a Windows one. Windows reports are especially welcome.
 
 ## npm packages
 
@@ -130,7 +128,7 @@ and import it:
 import dayjs from "dayjs";
 ```
 
-When the pack loads, the plugin installs what the `package.json` lists into the pack's own `node_modules/`, using the npm that ships inside the plugin, and the pack's scripts run once it has finished. The first start after you add a package takes as long as the download and needs network access; later starts find it installed. The [seen sample](samples/seen/) is a complete pack built this way.
+When the pack loads, the plugin installs what the `package.json` lists into the pack's own `node_modules/`, using the npm that ships inside the plugin, and the pack's scripts run once it has finished. The first start after you add a package takes as long as the download and needs network access; later starts find it installed. Each folder is installed at most once per server start, and an install that has not finished after 60 seconds is abandoned and the pack loads without it. When something was installed the log says so in one line; when npm fails it says why. The [seen sample](samples/seen/) is a complete pack built this way.
 
 **Where a `package.json` can go.** Node.js looks for packages from the importing script upwards, so a `package.json` serves every pack below it. All three places are installed, innermost first:
 
