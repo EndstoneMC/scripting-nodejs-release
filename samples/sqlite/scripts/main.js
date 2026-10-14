@@ -1,6 +1,3 @@
-// Per-player block statistics kept in SQLite, using node:sqlite — no npm install and no
-// native addon: the database engine is built into the Node.js runtime the plugin ships.
-
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -27,7 +24,6 @@ db.exec(`
     )
 `);
 
-// Prepared once, at load. Re-preparing a statement per call is the usual reason SQLite looks slow.
 const record = db.prepare(`
     INSERT INTO stats (player_id, player_name, action, block, count) VALUES (?, ?, ?, ?, ?)
     ON CONFLICT (player_id, action, block) DO UPDATE
@@ -38,8 +34,6 @@ const favouritesOf = db.prepare(
     "SELECT block, count FROM stats WHERE player_id = ? AND action = ? ORDER BY count DESC LIMIT 3",
 );
 
-// Events land here first. `DatabaseSync` is synchronous and runs on the server thread, so a
-// write per event would be a disk seek per event — batch them and commit on a timer instead.
 const pending = new Map();
 
 function queue(player, action, block) {
@@ -69,7 +63,6 @@ system.runInterval(() => {
     const batch = [...pending.values()];
     pending.clear();
 
-    // One transaction for the whole batch: SQLite commits to disk once rather than per row.
     db.exec("BEGIN");
     try {
         for (const row of batch) {

@@ -1,6 +1,3 @@
-// Relays joins, chat and leaves to a Discord channel with discord.js — an npm package,
-// installed into this pack's own node_modules, talking to the network over a WebSocket.
-
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -13,8 +10,6 @@ const CONFIG_FILE = join(DATA_DIR, "discord.json");
 const FLUSH_INTERVAL_TICKS = 40;
 const MAX_MESSAGE_LENGTH = 1900;
 
-// The config lives next to the server, not inside the pack: a pack folder gets copied
-// between worlds, zipped up and shared without anyone thinking about the token in it.
 function loadConfig() {
     const blank = { token: "", channel_id: "" };
 
@@ -54,11 +49,9 @@ client.once(Events.ClientReady, async ({ user }) => {
 });
 
 if (enabled) {
-    // The gateway is a WebSocket, kept alive by the event loop the server pumps every tick.
     client.login(config.token).catch((err) => console.error(`discord: login failed: ${err}`));
 }
 
-// Take whole lines up to Discord's message limit, leaving the rest for the next flush.
 function take() {
     const lines = [];
     let length = 0;
@@ -76,8 +69,6 @@ system.runInterval(() => {
         return;
     }
 
-    // One message per flush rather than one per event: Discord rate-limits a channel to a
-    // handful of sends every few seconds, and a busy server produces far more than that.
     channel
         .send({ content: take(), allowedMentions: { parse: [] } })
         .catch((err) => console.error(`discord: send failed: ${err}`));
@@ -91,8 +82,6 @@ world.afterEvents.playerLeave.subscribe(({ playerName }) => {
     pending.push(`**${escapeMarkdown(playerName)}** left the server`);
 });
 
-// A before-event runs in read-only mode, so the handler does nothing but queue a string.
-// The network call happens on the interval above, well after the event has returned.
 world.beforeEvents.chatSend.subscribe(({ sender, message }) => {
     pending.push(`**${escapeMarkdown(sender.name)}**: ${escapeMarkdown(message)}`);
 });
