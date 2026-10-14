@@ -47,10 +47,10 @@ There is nothing to configure.
 The start-up log has one line from the plugin saying which Node.js your scripts run on:
 
 ```
-[scripting-nodejs] Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0, for Bedrock 1.26.51 and 1.26.52.
+[scripting-nodejs] Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0.
 ```
 
-Run `/nodejs` in the console, or in game as an operator, for the same answer with each pack's memory use and the watchdog settings.
+Run `/nodejs` in the console, or in game as an operator, for the same answer: `This server is running scripting-nodejs version: 0.2.0 (Node.js: v24.18.0)`, or `(Node.js: not active)` when scripts run on the built-in engine.
 
 For a definite answer, install the [engine-check sample](samples/engine-check/). It logs which engine runs your packs' scripts:
 
@@ -62,7 +62,7 @@ If either says otherwise, [TROUBLESHOOTING](TROUBLESHOOTING.md) has every messag
 
 ## Compatibility
 
-Each release of scripting-nodejs supports specific versions of the Bedrock Dedicated Server, and each Endstone release runs one version of it. Pick the row for your Endstone.
+Each release of scripting-nodejs is tested on specific versions of the Bedrock Dedicated Server, and each Endstone release runs one version of it. Pick the row for your Endstone.
 
 | scripting-nodejs | Bedrock Dedicated Server | Endstone | Platforms |
 | --- | --- | --- | --- |
@@ -73,7 +73,7 @@ Each release of scripting-nodejs supports specific versions of the Bedrock Dedic
 
 Linux means Ubuntu 22.04 or newer and Debian 12 or newer (glibc 2.35 or newer). Older distributions that run Endstone, such as Ubuntu 20.04 and Debian 11, do not run this plugin. On macOS and ARM machines Endstone runs under Docker emulation, which scripting-nodejs has not been tested under.
 
-**Before you update Endstone**, check that the version you are moving to is in the table. On a Bedrock version the plugin does not support, it logs one error at start-up naming the supported versions, and your packs run on the built-in engine — so packs that use Node.js features stop loading until a scripting-nodejs release supports it. If you install Endstone with pip, you can stay on a version with `pip install endstone==0.11.14`.
+**Before you update Endstone**, check that the version you are moving to is in the table. Other Bedrock versions are tried on a best-effort basis; if the plugin cannot attach to the server it logs `scripting-nodejs could not hook into this Bedrock server, so scripts will run on Bedrock's built-in engine. Please report this with your start-up log: https://github.com/EndstoneMC/scripting-nodejs-release/issues` and your packs run on the built-in engine, so packs that use Node.js features stop loading. Please report it. If you install Endstone with pip, you can stay on a version with `pip install endstone==0.11.14`.
 
 ## What changes for a pack
 
@@ -109,7 +109,7 @@ Stated plainly, so none of them is a surprise.
 - **npm packages that need a build step do not work.** Install scripts are not run, so native addons such as `better-sqlite3`, `bcrypt` or `sharp` install but fail to load. Pure-JavaScript packages — most of npm — are unaffected, and `node:sqlite` is built in.
 - **An error from inside an npm package names your server's folder.** Your pack's own stack frames are relative, but frames inside `node_modules` carry the full path, so a pack that shows a caught error to a player can show them where your server lives.
 - **Stack traces point at the JavaScript your pack ships.** A pack compiled from TypeScript gets frames in the compiled output, not in the `.ts` sources.
-- **Windows has had less time on real servers than Linux.** In particular, 0.2.0's support for Bedrock 1.26.51 and 1.26.52 has been run on a Linux server but not yet on a Windows one. Windows reports are especially welcome.
+- **Windows has had less time on real servers than Linux.** In particular, 0.2.0 on Bedrock 1.26.51 and 1.26.52 has been run on a Linux server but not yet on a Windows one. Windows reports are especially welcome.
 
 ## npm packages
 

@@ -14,7 +14,7 @@ The quickest way to know which engine is running your packs is the [engine-check
 
 ## Scripts still run on the built-in engine
 
-Run `/nodejs` in the console: it says whether scripts run on Node.js and, if not, why. Or read the start-up log from the top, looking for lines starting `[scripting-nodejs]`.
+Run `/nodejs` in the console: it says whether scripts run on Node.js (`Node.js: not active` means they run on the built-in engine). Or read the start-up log from the top, looking for lines starting `[scripting-nodejs]`.
 
 **No `Loading scripting_nodejs` line at all.** Endstone did not find the plugin. Check that `plugins/endstone_scripting_nodejs.so` (`.dll` on Windows) is directly inside your server's `plugins/` folder — not in `plugins/plugins/`, and not in a folder named after the archive, which is where Windows' *Extract All* puts it by default. If Endstone printed
 
@@ -26,7 +26,7 @@ your Endstone is newer than this release supports; see the [compatibility table]
 
 **`Loading scripting_nodejs`, then an error.** The error names the problem; find it in the [message reference](#message-reference). The usual ones:
 
-- `scripting-nodejs 0.2.0 does not support this version of Bedrock Dedicated Server. …` — your Bedrock version is not supported by this release of scripting-nodejs.
+- `scripting-nodejs could not hook into this Bedrock server, …` — the plugin could not attach to your Bedrock build; see the [message reference](#message-reference).
 - `plugins/scripting_nodejs/libruntime.so is missing, …` — only part of the archive was unpacked.
 
 **`Scripts will run on Node.js …`, and no error.** The plugin is active, and every pack attached to the world runs on Node.js. If one still seems not to, install the engine-check sample beside it to confirm, and check the pack's own errors further down the log.
@@ -40,7 +40,7 @@ After updating Endstone, packs that import `node:` modules or npm packages fail 
 [Scripting] [Seen] ReferenceError: Import [dayjs.js] not found.
 ```
 
-because the server is back on the built-in engine, which has neither. (The `.js` on the end is the built-in engine's doing.) Look further up the log for `scripting-nodejs 0.2.0 does not support this version of Bedrock Dedicated Server.` — it means the new Endstone runs a Bedrock version this release of scripting-nodejs does not support. Go back to an Endstone version in the [compatibility table](README.md#compatibility) (`pip install endstone==0.11.14` if you installed it with pip), or update scripting-nodejs once a release lists your version.
+because the server is back on the built-in engine, which has neither. (The `.js` on the end is the built-in engine's doing.) Look further up the log for `scripting-nodejs could not hook into this Bedrock server` — it means the plugin could not attach to the Bedrock version the new Endstone runs. Go back to an Endstone version in the [compatibility table](README.md#compatibility) (`pip install endstone==0.11.14` if you installed it with pip), or report it.
 
 ## npm packages
 
@@ -95,7 +95,7 @@ The path is relative to your server folder, and the two numbers are the line and
 
 **The server freezes for a moment, or players see lag, while a pack works.** A pack's scripts run on the server thread, between the server's own work, so anything that blocks — a long loop, a synchronous file read, a large `DatabaseSync` query — holds the server until it finishes. Use the asynchronous APIs (`fs/promises`, `fetch`), spread work over ticks with `system.runJob`, or move it to a [worker thread](samples/worker-threads/).
 
-**The server stops after a high-memory or out-of-memory watchdog line.** A pack went past `script-watchdog-memory-limit`. The limit applies to each pack's JavaScript heap; `/nodejs` shows every pack's current heap. Memory a pack holds outside that heap, such as large buffers, is not counted, so also watch the server's overall memory use.
+**The server stops after a high-memory or out-of-memory watchdog line.** A pack went past `script-watchdog-memory-limit`. The limit applies to each pack's JavaScript heap; the server's script memory figures show the heap. Memory a pack holds outside that heap, such as large buffers, is not counted, so also watch the server's overall memory use.
 
 **`/script profiler stop` says `Profiler stopped. Failed to save profile.`** Bedrock's script profiler cannot record scripts running on Node.js.
 
@@ -107,9 +107,8 @@ Lines the plugin itself prints, all prefixed `[scripting-nodejs]`. `libruntime.s
 
 | Message | Meaning | What to do |
 | --- | --- | --- |
-| `Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0, for Bedrock 1.26.51 and 1.26.52.` (versions vary by release) | The plugin started Node.js. With no error after it, scripts run on Node.js. | Nothing. |
-| `scripting-nodejs 0.2.0 does not support this version of Bedrock Dedicated Server. It supports 1.26.51 and 1.26.52. Scripts will run on Bedrock's built-in engine, so packs that use Node.js features will fail to load. Update scripting-nodejs, or use a version of Endstone listed at …` | This release does not support your Bedrock version, so scripts run on the built-in engine. | Use an Endstone version in the [compatibility table](README.md#compatibility), or update scripting-nodejs. |
-| `scripting-nodejs could not start on this Bedrock server although it is a supported version. Scripts will run on Bedrock's built-in engine. Please report this with your start-up log: …` | The plugin could not start on a Bedrock version it supports. | [Report it](#filing-an-issue) with the start-up log. |
+| `Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0.` (versions vary by release) | The plugin started Node.js. With no error after it, scripts run on Node.js. | Nothing. |
+| `scripting-nodejs could not hook into this Bedrock server, so scripts will run on Bedrock's built-in engine. Please report this with your start-up log: …` | The plugin could not attach to this Bedrock build, so scripts run on the built-in engine. Builds other than 1.26.51 and 1.26.52 are tried best effort. | [Report it](#filing-an-issue) with the start-up log. |
 | `Node.js failed to start, so scripts will run on Bedrock's built-in engine. Please report this with the lines below: …` followed by more lines | Node.js refused to start; the lines after it say why. Often a bad `NODE_OPTIONS` value. | Fix or unset `NODE_OPTIONS`; otherwise report it with those lines. |
 | `plugins/scripting_nodejs/libruntime.so is missing, so scripts will run on Bedrock's built-in engine. Unpack the whole release archive over the server folder, not just the plugin.` | Only the plugin file was copied, not the `scripting_nodejs/` folder beside it. | Unzip the whole archive into the server folder. |
 | `plugins/scripting_nodejs/libruntime.so could not be loaded, so scripts will run on Bedrock's built-in engine. Unpack the whole release archive over the server folder again; if this comes back, report it with this line at …. The loader said: <reason>` | The runtime is present but the system could not load it; the reason is the operating system's. | Unzip the whole archive again, so every file in `scripting_nodejs/` is from the same release. On Linux, a `GLIBC_2.xx not found` reason means the distribution is older than Ubuntu 22.04 or Debian 12. Anything else: report it. |
