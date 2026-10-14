@@ -1,0 +1,25 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "Engine Check",
+        "description": "Says which JavaScript engine runs this server's scripts.",
+        "uuid": "9a6a4fe8-a6f2-4da8-85b2-5382e316a3c7",
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 26, 0]
+    },
+    "modules": [
+        {
+            "type": "script",
+            "language": "javascript",
+            "uuid": "e4666ca5-e1a5-4760-839a-c450a91d8b8a",
+            "version": [1, 0, 0],
+            "entry": "scripts/main.js"
+        }
+    ],
+    "dependencies": [
+        {
+            "module_name": "@minecraft/server",
+            "version": "2.4.2"
+        }
+    ]
+}
