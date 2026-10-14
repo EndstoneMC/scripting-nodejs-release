@@ -36,7 +36,7 @@ and your packs run on the built-in engine. Check this table before you update En
 4. Start the server. The log shows:
 
     ```
-    [scripting-nodejs] Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0.
+    [Scripting] [Node.js] Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0.
     ```
 
 There is nothing to configure. `/nodejs` prints the plugin and Node.js versions, or `(Node.js: not active)` when

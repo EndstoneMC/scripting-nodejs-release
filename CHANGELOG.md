@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- The plugin's log lines are now prefixed `[scripting-nodejs]`.
+- The plugin's log lines are now prefixed `[Scripting] [Node.js]`.
 - A missing, mismatched or unloadable `plugins/scripting_nodejs/` folder is reported in plain words, with the system's reason as text on Windows.
 - npm packages are installed once per folder per start, give up after 60 seconds, and print one line saying what happened.
 - An import that finds nothing reads as it does on the built-in engine, without Node.js internals in the error.

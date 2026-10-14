@@ -14,7 +14,7 @@ The quickest way to know which engine is running your packs is the [engine-check
 
 ## Scripts still run on the built-in engine
 
-Run `/nodejs` in the console: it says whether scripts run on Node.js (`Node.js: not active` means they run on the built-in engine). Or read the start-up log from the top, looking for lines starting `[scripting-nodejs]`.
+Run `/nodejs` in the console: it says whether scripts run on Node.js (`Node.js: not active` means they run on the built-in engine). Or read the start-up log from the top, looking for lines starting `[Scripting] [Node.js]`.
 
 **No `Loading scripting_nodejs` line at all.** Endstone did not find the plugin. Check that `plugins/endstone_scripting_nodejs.so` (`.dll` on Windows) is directly inside your server's `plugins/` folder — not in `plugins/plugins/`, and not in a folder named after the archive, which is where Windows' *Extract All* puts it by default. If Endstone printed
 
@@ -103,7 +103,7 @@ The path is relative to your server folder, and the two numbers are the line and
 
 ## Message reference
 
-Lines the plugin itself prints, all prefixed `[scripting-nodejs]`. `libruntime.so` is `runtime.dll` on Windows.
+Lines the plugin itself prints, all prefixed `[Scripting] [Node.js]`. `libruntime.so` is `runtime.dll` on Windows.
 
 | Message | Meaning | What to do |
 | --- | --- | --- |
