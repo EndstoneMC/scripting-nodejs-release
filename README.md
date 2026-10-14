@@ -1,144 +1,190 @@
 # scripting-nodejs
 
-**Run existing Script API addons, with the full Node.js ecosystem.**
+**Your Script API addons, running on Node.js.**
 
-This repository is for providing feedback, documentation and samples for the **scripting-nodejs** plugin for [Endstone](https://github.com/EndstoneMC/endstone). You can use it to report issues, submit feature requests and share what you have built. The scripting-nodejs codebase is not open-source, but contributions are welcome here in the form of issues, feature requests, samples and feedback — every report is read and shapes what gets built next.
+scripting-nodejs is a plugin for [Endstone](https://github.com/EndstoneMC/endstone) that replaces the Bedrock Dedicated Server's built-in script engine with [Node.js](https://nodejs.org). The behaviour packs you already run keep working exactly as they are — same `@minecraft/server` imports, same events, same API — and every pack gains what Node.js has: npm packages, files, the network, worker threads, and a compiler that runs plain JavaScript many times faster.
 
-scripting-nodejs replaces the Bedrock Dedicated Server's built-in QuickJS script engine with a real [Node.js](https://nodejs.org) runtime, so the behaviour packs you already run keep their `@minecraft/*` imports and gain the whole npm ecosystem behind them.
+This repository is where you download it, read about it, report problems and share what you build. The plugin itself is closed source; the documentation and samples here are open.
 
-> [!WARNING]
-> **v0.1.0 is a pre-release.** It runs behaviour packs on Node.js on both Linux and Windows servers, and it is not ready for a production server: there is no debugger, a stack overflow reaches the log as an ordinary error with no watchdog event, and a few binding paths still answer `undefined`. The [changelog](CHANGELOG.md) lists what works and what does not, and [TROUBLESHOOTING](TROUBLESHOOTING.md) is worth reading before you file.
+> [!NOTE]
+> **scripting-nodejs is a pre-release.** It runs behaviour packs on Linux and Windows servers, and a handful of things are not finished yet — they are listed under [sharp edges](#sharp-edges). Try it on a test server before your live one.
 
-## Quick Start
+## Why
 
-1. Install [Endstone](https://endstone.dev/) v0.11 or newer and start your server once so the folder layout exists.
-2. Download the release archive for your platform from [Releases](https://github.com/EndstoneMC/scripting-nodejs-release/releases).
-3. Unzip it over your server root. The archive is rooted there already, so everything lands in `plugins/`: the plugin itself, and a `scripting_nodejs/` folder beside it holding the runtime and npm.
-4. Restart the server.
+- **npm.** List a package in a `package.json` beside your pack's `manifest.json` and import it. The plugin installs it when the pack loads; the server needs nothing else installed.
+- **The rest of the world.** Read and write files, open a database, call a web API, run an HTTP endpoint, keep a WebSocket open to Discord — all from inside a behaviour pack.
+- **Speed.** Plain JavaScript runs 6 to 550 times faster than on the built-in engine in our benchmarks — about 50 times on average — and worker threads take heavy work off the server thread entirely. See [Performance](#performance).
+- **Nothing to rewrite.** Packs need no changes, and there is nothing to configure.
 
-There is nothing to configure, and your behaviour packs stay exactly as they are.
+## Install
 
-## Features
+You need an Endstone server whose version is in the [compatibility table](#compatibility). Running `version` in the server console prints it:
 
-* Behaviour-pack scripts run on Node.js, with the same addons and the same `@minecraft/*` imports
-* `import` and `import()` of `node:` builtins, npm packages and files on disk
-* Worker threads, so heavy work never costs you tick time
-* Full ICU, for correct internationalisation out of the box
-* npm packages install themselves — declare them in a `package.json` and the plugin installs them when the pack loads, with no Node or npm needed on the server
-* Per-pack dependencies — a pack has its own `node_modules`, and two packs can depend on different versions of the same package
-* `console.log`, `.info`, `.debug`, `.warn` and `.error` reach the server log, formatted the way Node formats them
-* Promises and `await` resolve, because the server pumps the event loop every tick
-* Errors keep their class, their message and a pack-relative stack
-* Your script-watchdog settings still apply: a pack that stops returning is cut off at the hang threshold, and one that allocates without limit is stopped rather than taking the process down
-* Script timings and memory figures come off the real engine instead of reading zero
+```
+This server is running Endstone version: 0.11.14 (Minecraft: 26.52)
+```
 
-See the [changelog](CHANGELOG.md) for the latest release.
+1. Stop the server.
+2. Download the archive for your platform from [Releases](https://github.com/EndstoneMC/scripting-nodejs-release/releases).
+3. Unzip it into your **server folder** — the one that holds `server.properties` and `plugins/`. The archive already contains the `plugins/` folder, so it merges into yours:
 
-## Using an npm package
+    ```
+    bedrock_server/
+    ├── server.properties
+    └── plugins/
+        ├── endstone_scripting_nodejs.so      (.dll on Windows)
+        └── scripting_nodejs/                 the Node.js runtime and npm
+    ```
 
-Declare what you need in a `package.json` and import it. The plugin installs the dependencies when the pack loads, using the npm that ships inside it — nothing has to be installed on the server, and there is no build step for you to run.
+    On Windows, *Extract All* suggests a new folder named after the archive — change it to your server folder. On Linux, `unzip -o scripting-nodejs-*-linux-x64.zip -d /path/to/bedrock_server`. On a hosting panel, upload the archive to the server's top folder and unarchive it there.
 
-### Where the package.json goes
+4. Start the server.
 
-Three places, each with a different reach. All three are installed, and Node resolves through them in the same order:
+There is nothing to configure.
 
-| Location | Available to |
-| --- | --- |
-| `behavior_packs/mypack/package.json` | that pack alone |
-| `behavior_packs/package.json` | every pack in that folder |
-| `package.json` in the server root | every pack on the server |
+### Check that it is active
 
-Innermost wins. A pack that declares its own copy of a package gets that copy, whatever the folder above it asks for, so two packs can depend on different versions of one and neither has to care.
+The start-up log names Node.js, with no error line after it:
 
-A pack's `package.json` sits beside its `manifest.json`, and needs nothing but the dependencies:
+```
+[Scripting] Loading scripting_nodejs v0.1.0
+[Scripting] Initializing Node.js v24.18.0 (LTS) (v8: 13.6.233.17).
+```
+
+For a definite answer, install the [engine-check sample](samples/engine-check/). It logs which engine runs your packs' scripts:
+
+```
+[Scripting] engine-check: scripts run on Node.js 24.18.0 (V8 13.6.233.17-node.50)
+```
+
+If either says otherwise, [TROUBLESHOOTING](TROUBLESHOOTING.md) has every message the plugin prints and what to do about it.
+
+## Compatibility
+
+Each release of scripting-nodejs supports specific versions of the Bedrock Dedicated Server, and each Endstone release runs one version of it. Pick the row for your Endstone.
+
+| scripting-nodejs | Bedrock Dedicated Server | Endstone | Platforms |
+| --- | --- | --- | --- |
+| next release | 1.26.51, 1.26.52 | 0.11.11 – 0.11.14 | Linux x64, Windows x64 |
+| [0.1.0](https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.1.0) | 1.26.3x – 1.26.4x | 0.11.5 – 0.11.10 | Linux x64¹, Windows x64 |
+
+¹ 0.1.0 on Linux loads only where the LLVM C++ runtime (`libc++.so.1`) is installed; the next release carries its own.
+
+Linux means the distributions Endstone supports (Ubuntu 22.04 or newer, Debian 12 or newer). On macOS and ARM machines Endstone runs under Docker emulation, which scripting-nodejs has not been tested under.
+
+**Before you update Endstone**, check that the version you are moving to is in the table. On a Bedrock version the plugin does not support, it logs one error at start-up and your packs run on the built-in engine — so packs that use Node.js features stop loading until a scripting-nodejs release supports it. If you install Endstone with pip, you can stay on a version with `pip install endstone==0.11.14`.
+
+## What changes for a pack
+
+**Nothing you have to do.** A pack that runs on a stock Bedrock server runs here unchanged: same `manifest.json`, same `@minecraft/*` modules and versions, same events and errors. The script watchdog's memory limit in `server.properties` applies to each pack; how runaway scripts are handled differs, see [sharp edges](#sharp-edges).
+
+**What a pack can now do:**
+
+- `import` from `node:fs`, `node:http`, `node:crypto`, `node:worker_threads`, `node:sqlite` and every other Node.js built-in, statically or with `import()`.
+- Import npm packages, installed for it from a `package.json` — see [npm packages](#npm-packages).
+- Use the globals Node.js has: `fetch`, `WebSocket`, `setTimeout`, `setInterval`, `structuredClone`, `TextEncoder`, `URL`, `process`, `Buffer`.
+- Import its own `.mjs` files, and `.json` files with `import config from "./config.json" with { type: "json" }`.
+
+**What reads differently:**
+
+- `console.log` formats values the way Node.js does — `{ a: 1 }` rather than `[object Object]` — and `console.debug` exists.
+- Stack traces carry line *and* column numbers and start with the pack's folder: `at development_behavior_packs/my-pack/scripts/main.js:14:9`.
+- `import.meta.url` is the module's path from the server folder, such as `development_behavior_packs/my-pack/scripts/main.js`, not a `file:` URL, and `import.meta.dirname` is not set. To reach a file beside a module, use `path.resolve(path.dirname(import.meta.url), "data.json")`.
+- Relative paths in `node:fs` start at the server folder, the one with `server.properties` in it.
+- Pack scripts are ES modules, so `require` is not defined. `import` works for CommonJS packages too.
+
+## Sharp edges
+
+Stated plainly, so none of them is a surprise.
+
+- **A pack can do anything the server can.** On a stock server a pack is sandboxed. Here it can read and write any file the server's user can, connect anywhere, and start programs. Install packs only from people you trust, and run the server as a user that owns nothing else.
+- **Script code shares the server tick.** A synchronous loop, a `readFileSync` of a large file, a slow `DatabaseSync` query — anything that blocks — holds the whole server while it runs, exactly as on the built-in engine. Use the asynchronous APIs, batch your work, or move it to a [worker thread](samples/worker-threads/).
+- **`process.exit()` does not stop the server.** The call is abandoned with `Error: null` in the log, the pack's timers and network and file callbacks stop for good, and its Script API event handlers carry on. Do not call it.
+- **`/reload` is refused** while the plugin is installed, with a message saying to restart instead. Restart the server to reload plugins and packs. *(0.1.0 does not refuse it, and a `/reload` there can crash the server.)*
+- **A Bedrock update can leave the plugin behind.** See [Before you update Endstone](#compatibility).
+- **No debugger and no profiler yet.** You cannot attach a debugger to a pack, set a breakpoint or take a CPU profile; Bedrock's own `/script profiler` starts but cannot save a profile. Debugging is `console.log` and stack traces.
+- **A script that never returns freezes the server.** On the built-in engine the script watchdog interrupts a script that runs past `script-watchdog-hang-threshold`, and by default shuts the server down. On scripting-nodejs a script that loops forever — at the top of a pack, in an event handler or in a `system.run` callback — is not interrupted, and holds the server until it is restarted.
+- **Runaway recursion raises no watchdog event.** It stops with an ordinary `RangeError: Maximum call stack size exceeded` and the server keeps running, where the built-in engine's watchdog shuts it down by default.
+- **A few Script API paths are not finished.** Iterating a native collection with `for…of` throws, and a few container properties read `undefined` and ignore writes. A `@minecraft/*` module whose own dependencies are not met can still be imported, where a stock server refuses it.
+- **npm packages that need a build step do not work.** Install scripts are not run, so native addons such as `better-sqlite3`, `bcrypt` or `sharp` install but fail to load. Pure-JavaScript packages — most of npm — are unaffected, and `node:sqlite` is built in.
+- **An error from inside an npm package names your server's folder.** Your pack's own stack frames are relative, but frames inside `node_modules` carry the full path, so a pack that shows a caught error to a player can show them where your server lives.
+- **Stack traces point at the JavaScript your pack ships.** A pack compiled from TypeScript gets frames in the compiled output, not in the `.ts` sources.
+- **The memory limit counts the JavaScript heap.** Memory held outside it — large `Buffer`s and `ArrayBuffer`s, and anything a native module allocates — is not counted against `script-watchdog-memory-limit`.
+- **Windows has had less time on real servers than Linux.** In particular, the next release's support for Bedrock 1.26.51 and 1.26.52 has been checked on Windows but not yet run on a Windows server. Windows reports are especially welcome.
+
+## npm packages
+
+Put a `package.json` beside your pack's `manifest.json`, listing what you need:
 
 ```json
 {
     "dependencies": {
-        "discord.js": "^14.27.0"
+        "dayjs": "^1.11.13"
     }
 }
 ```
 
-Then import it the way you would anywhere else:
+and import it:
 
 ```js
-import { Client } from "discord.js";
+import dayjs from "dayjs";
 ```
 
-The [discord sample](samples/discord/) is a working pack built this way.
+When the pack loads, the plugin installs what the `package.json` lists into the pack's own `node_modules/`, using the npm that ships inside the plugin, and the pack's scripts run once it has finished. The first start after you add a package takes as long as the download and needs network access; later starts find it installed. The [seen sample](samples/seen/) is a complete pack built this way.
 
-### What happens on start-up
+**Where a `package.json` can go.** Node.js looks for packages from the importing script upwards, so a `package.json` serves every pack below it. All three places are installed, innermost first:
 
-When a pack that declares dependencies loads, the plugin runs npm's own installer over each of the three locations that has a `package.json`, **before** the pack's scripts run, and waits for it to finish. So the first start after you add a dependency takes as long as the install does and needs a working network connection; later starts have nothing to do and cost nothing.
+| `package.json` in | Serves |
+| --- | --- |
+| the pack folder, beside `manifest.json` | that pack alone |
+| the packs folder, such as `development_behavior_packs/` | every pack in that folder |
+| the server folder | every pack on the server |
 
-The server log says what happened:
+A pack that lists its own copy of a package gets that copy, so two packs can depend on different versions of one.
 
-```
-Installed behavior_packs/mypack's dependencies from behavior_packs/mypack, behavior_packs.
-```
+**Zipped packs.** A `.mcpack` cannot hold a `node_modules/` of its own. Put the `package.json` in the folder the `.mcpack` sits in instead.
 
-If an install fails, the failing location and npm's own error are logged, the server carries on, and the pack's imports fail where they are written — so a network outage at start-up costs you that pack, not the server.
+**What the install does not do.** It does not run install scripts (see [sharp edges](#sharp-edges)), does not delete packages you put in `node_modules/` yourself, does not read `.npmrc` — so private registries are not supported — and prints no audit or funding notices.
 
-### What it does not do
-
-**Lifecycle scripts do not run.** Installs are performed with `ignoreScripts`, so a package that compiles something in a `postinstall` — most native addons — will not build, and a package is not able to run code on your server merely by being depended on. Pure-JavaScript packages, which is the overwhelming majority of npm, are unaffected.
-
-**Nothing is pruned.** A package sitting in `node_modules` that nothing depends on any more is left where it is rather than deleted.
-
-**No audit, no funding notices.** Neither has anywhere to print on a game server.
-
-### Installing by hand instead
-
-You can still run `npm install` in any of those three folders yourself and ship the resulting `node_modules` with the pack. It is the same install engine either way, so the tree is the same one the plugin would have built. Worth doing for a server with no outbound network, or when you want the exact tree pinned and reviewed before it reaches production.
+**Offline servers.** Run `npm install` in the pack folder on a machine with network access and ship the pack with its `node_modules/`, or bundle the pack and its packages into one file with a bundler such as esbuild. Either way there is nothing left to download when the server starts.
 
 ## Performance
 
-QuickJS is a bytecode interpreter with no JIT, so script code that does real work runs a lot faster once V8 is underneath it. One behaviour pack, run twice on the same machine — once with the plugin installed, once with it moved aside so BDS keeps its own engine:
+The built-in engine is an interpreter; Node.js compiles hot JavaScript to machine code. The [benchmarks sample](samples/benchmarks/) runs the same workloads on both engines on the same server, with warm-up rounds discarded and the median of repeated runs reported:
 
-| Benchmark | QuickJS | Node.js / V8 | |
+| Benchmark | Built-in engine | Node.js | |
 | --- | ---: | ---: | ---: |
-| integer loop, 20k iterations | 176 ops/s | 97,175 ops/s | **551×** |
-| object field access, 5k objects | 258 ops/s | 29,348 ops/s | **114×** |
-| float loop, 20k iterations | 145 ops/s | 11,208 ops/s | **77×** |
-| recursion, `fib(18)` | 506 ops/s | 29,055 ops/s | **57×** |
-| string building, 2k appends | 1,488 ops/s | 65,058 ops/s | **44×** |
-| `map`/`filter`/`reduce`, 5k elements | 336 ops/s | 14,463 ops/s | **43×** |
-| `Array.sort`, 2k elements | 393 ops/s | 2,473 ops/s | **6×** |
-| | | geometric mean | **61×** |
+| integer loop, 20k iterations | 151 ops/s | 82,758 ops/s | **547×** |
+| object field access, 5k objects | 404 ops/s | 86,474 ops/s | **214×** |
+| float loop, 20k iterations | 139 ops/s | 15,782 ops/s | **114×** |
+| recursion, `fib(18)` | 456 ops/s | 23,914 ops/s | **52×** |
+| string building, 2k appends | 1,066 ops/s | 18,996 ops/s | **18×** |
+| map/filter/reduce, 5k elements | 449 ops/s | 6,370 ops/s | **14×** |
+| `Array.sort`, 2k elements | 452 ops/s | 2,824 ops/s | **6.2×** |
+| `system.currentTick`, 1k reads | 2,034 ops/s | 3,988 ops/s | **2.0×** |
+| `world.getDimension()`, 1k calls | 890 ops/s | 874 ops/s | **1.0×** |
+| `BlockPermutation.resolve()`, 100 calls | 6,124 ops/s | 5,758 ops/s | **0.9×** |
 
-The spread matters more than the average. Sorting gains least because the sort itself is C in both engines and only the comparator is JavaScript; the integer loop gains most because it is exactly what a JIT is for. The more of your hot path is JavaScript rather than engine internals, the more this is worth.
+The shape matters more than any one number. Code that is mostly JavaScript — loops, arithmetic, objects, strings, arrays — gains the most, because that is what a JIT compiler is for. Calls into the Script API itself (`world.getDimension()`, `BlockPermutation.resolve()`, reading `system.currentTick`) run at about the speed they do on the built-in engine, because the time goes into the game rather than into JavaScript. So a pack gains in proportion to how much of its time is its own JavaScript.
 
-Measured with Node.js v24.18.0 (V8 13.6) against BDS 1.26.32.2, each benchmark given the same 150 ms of warm-up and 400 ms of measurement on both engines, counting iterations rather than timing a fixed count. Single run per engine, so treat the exact figures as indicative.
-
-## Compatibility
-
-| | Supported |
-| --- | --- |
-| Endstone | v0.11 |
-| Bedrock Dedicated Server | 1.26.x |
-| Platforms | Linux (x64), Windows (x64) |
+Measured on 2026-10-14 with Node.js v24.18.0 on Bedrock Dedicated Server 1.26.51.1 for Linux, on an 8-thread AMD EPYC-Milan server that was busy with other work. Four server runs per engine, alternating between them; each run discards two warm-up rounds per benchmark and measures seven rounds of 250 ms. Each figure is the median of the four per-run medians. The [benchmarks sample](samples/benchmarks/) has the ranges, the method in full, and a script to summarise your own runs — the numbers on your hardware will differ, the shape will not.
 
 ## Samples
 
-Sample behaviour packs live in [samples/](samples/). They are ordinary packs — install one the way you install any other, then read the source to see what it does.
+Complete behaviour packs, each showing one thing Node.js makes possible, are in [samples/](samples/): an engine check, an npm package behind a `/seen` command, files, an HTTP status endpoint, worker threads, SQLite, a Discord relay, and the benchmarks above.
 
-## Troubleshooting
+## Documentation
 
-Known issues and guidelines for filing a good report are documented in [TROUBLESHOOTING](TROUBLESHOOTING.md).
+The [Scripting with Node.js](https://endstone.dev/docs/scripting-nodejs) section of the Endstone documentation covers installation, your first npm package, what differs from the built-in engine, performance and debugging in more depth.
 
-## Contributing
+## Help and feedback
 
-The scripting-nodejs codebase is not open-source, so there is no pull request to send. What helps most is everything else: a clear bug report, a feature request that explains the problem behind it, a sample pack that shows a pattern working, or a correction to these docs. Issues, samples and documentation fixes in this repository are all welcome, and they are what the roadmap is built from.
+- Something not working? [TROUBLESHOOTING](TROUBLESHOOTING.md) lists every message the plugin prints and what to do about each.
+- Found a bug or want a feature? [Open an issue](https://github.com/EndstoneMC/scripting-nodejs-release/issues/new/choose).
+- Questions, ideas and show-and-tell go in [Discussions](https://github.com/EndstoneMC/scripting-nodejs-release/discussions) or on the [Endstone Discord](https://discord.gg/xxgPuc2XN9).
 
-If you would rather contribute code, [Endstone](https://github.com/EndstoneMC/endstone) itself — the server software this plugin is built on — is open-source and takes pull requests.
-
-## Feedback
-
-* File a bug or a feature request in [GitHub Issues](https://github.com/EndstoneMC/scripting-nodejs-release/issues/new/choose)
-* Ask a question or share what you have built in [Discussions](https://github.com/EndstoneMC/scripting-nodejs-release/discussions)
-* Chat with us on [Discord](https://discord.gg/xxgPuc2XN9)
+See [SUPPORT](SUPPORT.md) for what to include and where to ask. Changes in each release are in the [changelog](CHANGELOG.md).
 
 ## License
 
-The documentation and samples in this repository are licensed under [Apache-2.0](LICENSE). The plugin itself is distributed under the licence bundled with each release.
+The documentation and samples in this repository are licensed under [Apache-2.0](LICENSE). The scripting-nodejs plugin is closed source and distributed as a binary on the [Releases](https://github.com/EndstoneMC/scripting-nodejs-release/releases) page.
