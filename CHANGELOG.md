@@ -6,31 +6,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Added support for Bedrock Dedicated Server 1.26.51 and 1.26.52, which Endstone 0.11.11 to 0.11.14 run.
+
+### Changed
+
+- `/reload` is refused while the plugin is installed, with a message saying to restart the server instead, rather than crashing it (#3).
+- The start-up error says whether the plugin's runtime files are missing or present but unable to load, and on Windows gives the reason as text rather than an error number.
+
+### Removed
+
+- **BREAKING**: Removed support for Bedrock Dedicated Server 1.26.3x and 1.26.4x; use 0.1.0 with Endstone 0.11.10 or earlier for those.
+
+### Fixed
+
+- Fixed the plugin failing to load on Linux servers that do not have the LLVM C++ runtime installed, such as a fresh Ubuntu 24.04 (#2).
+- Fixed the server crashing when a pack imports certain npm packages, such as `mongodb` (#1).
+
 ## [0.1.0] - 2026-08-05
 
-The first release, and a pre-release: it runs behaviour packs on Node.js on both Linux and Windows servers, and the limitations below are ones you will meet rather than ones we expect you not to.
+The first release, and a pre-release.
 
 ### Added
 
-- Behaviour-pack scripts run on Node.js instead of the server's built-in QuickJS engine. Your packs keep their `@minecraft/*` imports and need no changes, and there is nothing to configure — install the plugin and restart.
-- `import` and `import()` of `node:` builtins, npm packages and files on disk, including worker threads and full ICU.
-- A pack's dependencies are its own. A bare specifier resolves from the pack's own `node_modules` first, then the packs directory, then the server, so two packs can depend on different versions of the same package. A `.mcpack` behaves the same, except that nothing can read a `node_modules` that exists only inside a zip.
-- npm and corepack ship with the plugin, and a pack's declared dependencies are installed before its scripts run.
-- `console.log`, `.info`, `.debug`, `.warn` and `.error` reach the server log, formatted the way Node formats them, stack frames included.
-- Errors read the way they do on the built-in engine — class, message and a pack-relative stack — matched against the real engine character for character by a behaviour pack that runs on both.
-- Nothing a pack can read of its own files carries the server's path: `import.meta.url` and every frame naming a pack file is relative to the pack.
-- A runaway script is stopped at the server's hang threshold and the tick carries on, and a pack that allocates without limit is terminated against the script-memory ceiling in your server properties rather than taking the process down with it.
-- The server's script timings, watchdog events and memory figures are real, so the `Slow`, `Spike`, `Hang` and high-memory thresholds you configure behave as they do on the built-in engine.
-- An uploaded stack trace maps back to original sources when a pack was built with a bundler that leaves debug ids behind.
-
-### Known limitations
-
-- **No debugger and no profiler.** You cannot attach a debugger to a pack, set a breakpoint, step, or take a CPU profile. Debugging is `console.log` and stack traces.
-- **Stack overflow is invisible to an operator.** Runaway recursion reaches the log as a `RangeError` and raises no watchdog event.
-- **A stack frame from an npm package names the server's own directory.** A pack's own frames carry nothing, but a package Node resolved for itself keeps the absolute path it was found at, so an error caught from a package and shown to a player can put your install path in front of them.
-- **Script code shares the server tick.** Pack JavaScript that blocks stalls the server, as it does on the built-in engine.
-- **A few binding paths answer `undefined`.** Container properties handed back by reference work in neither direction, and a native class the built-in engine makes `for…of`-iterable is not iterable here.
-- **A Bedrock update can drop you back to the built-in engine.** The plugin finds where to install itself by byte pattern, and a server update breaks that, leaving one error line in the log until a new build ships.
+- Behaviour-pack scripts run on Node.js instead of the server's built-in engine, with the same `@minecraft/*` imports and nothing to configure.
+- Packs can `import` Node.js built-ins, npm packages and their own files, including worker threads and full ICU.
+- npm packages listed in a pack's `package.json` are installed before the pack's scripts run, with no Node.js or npm needed on the server.
+- Each pack resolves npm packages from its own `node_modules` first, so two packs can depend on different versions of one package.
+- `console.log`, `.info`, `.debug`, `.warn` and `.error` reach the server log, formatted the way Node.js formats them.
+- Errors keep the class, message and pack-relative stack they have on the built-in engine.
+- `import.meta.url` and stack frames for a pack's own files are relative to the server folder, so they do not reveal where the server is installed.
+- The script watchdog's hang threshold stops a runaway script and its memory limit stops a pack that allocates without bound, without taking the server down.
+- The server's script timings, memory figures and `Slow`, `Spike`, `Hang` and high-memory watchdog events come from the real engine.
+- Stack traces from a pack built with a bundler that records debug ids can be mapped back to the original sources.
 
 [Unreleased]: https://github.com/EndstoneMC/scripting-nodejs-release/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.1.0
