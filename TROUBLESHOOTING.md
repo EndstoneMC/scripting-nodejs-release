@@ -6,7 +6,7 @@ Start with the symptom. Every message the plugin prints is in the [message refer
 - [A pack stopped loading after an update](#a-pack-stopped-loading-after-an-update)
 - [npm packages](#npm-packages)
 - [Errors from a pack's scripts](#errors-from-a-packs-scripts)
-- [The server stalls, or will not stop](#the-server-stalls-or-will-not-stop)
+- [The server stalls or freezes](#the-server-stalls-or-freezes)
 - [`/reload` is refused](#reload-is-refused)
 - [Lines you can ignore](#lines-you-can-ignore)
 - [Message reference](#message-reference)
@@ -87,7 +87,7 @@ The path is relative to your server folder, and the two numbers are the line and
 
 **It works on the built-in engine and not here.** Check the [sharp edges](README.md#sharp-edges) — `for…of` over a native collection, and a few container properties, are the usual suspects — and if it is none of those, please [report it](#filing-an-issue) with the smallest pack that shows it.
 
-## The server stalls, or will not stop
+## The server stalls or freezes
 
 **The server freezes and never recovers.** A pack's script is stuck in a loop — at its top level while it loads, in an event handler, or in a `system.run` callback. The built-in engine's watchdog would interrupt it after `script-watchdog-hang-threshold`; scripting-nodejs does not, so the server waits for it. Restart the server, and find the pack by detaching packs from the world until the freeze stops.
 
