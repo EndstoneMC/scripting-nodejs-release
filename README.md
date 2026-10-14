@@ -76,7 +76,7 @@ Linux means the distributions Endstone supports (Ubuntu 22.04 or newer, Debian 1
 
 ## What changes for a pack
 
-**Nothing you have to do.** A pack that runs on a stock Bedrock server runs here unchanged: same `manifest.json`, same `@minecraft/*` modules and versions, same events and errors. The script watchdog's memory limit in `server.properties` applies to each pack; how runaway scripts are handled differs, see [sharp edges](#sharp-edges).
+**Nothing you have to do.** A pack that runs on a stock Bedrock server runs here unchanged: same `manifest.json`, same `@minecraft/*` modules and versions, same events and errors. The script watchdog is the exception — see [sharp edges](#sharp-edges).
 
 **What a pack can now do:**
 
@@ -109,7 +109,7 @@ Stated plainly, so none of them is a surprise.
 - **npm packages that need a build step do not work.** Install scripts are not run, so native addons such as `better-sqlite3`, `bcrypt` or `sharp` install but fail to load. Pure-JavaScript packages — most of npm — are unaffected, and `node:sqlite` is built in.
 - **An error from inside an npm package names your server's folder.** Your pack's own stack frames are relative, but frames inside `node_modules` carry the full path, so a pack that shows a caught error to a player can show them where your server lives.
 - **Stack traces point at the JavaScript your pack ships.** A pack compiled from TypeScript gets frames in the compiled output, not in the `.ts` sources.
-- **The memory limit counts the JavaScript heap.** Memory held outside it — large `Buffer`s and `ArrayBuffer`s, and anything a native module allocates — is not counted against `script-watchdog-memory-limit`.
+- **The script memory limit is not enforced.** On the built-in engine a pack that goes past `script-watchdog-memory-limit` is stopped, and by default the server shuts down. On scripting-nodejs the pack keeps allocating, so a pack that leaks memory grows until something else stops it. Keep an eye on the server's memory use.
 - **Windows has had less time on real servers than Linux.** In particular, the next release's support for Bedrock 1.26.51 and 1.26.52 has been checked on Windows but not yet run on a Windows server. Windows reports are especially welcome.
 
 ## npm packages

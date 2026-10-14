@@ -93,7 +93,7 @@ The path is relative to your server folder, and the two numbers are the line and
 
 **The server freezes for a moment, or players see lag, while a pack works.** A pack's scripts run on the server thread, between the server's own work, so anything that blocks — a long loop, a synchronous file read, a large `DatabaseSync` query — holds the server until it finishes. Use the asynchronous APIs (`fs/promises`, `fetch`), spread work over ticks with `system.runJob`, or move it to a [worker thread](samples/worker-threads/).
 
-**The memory figures in `script-watchdog-memory-warning` and `script-watchdog-memory-limit`** count the JavaScript heap of each pack. Large `Buffer`s and `ArrayBuffer`s are not counted.
+**The server's memory use keeps climbing.** `script-watchdog-memory-limit` is not enforced on scripting-nodejs, so a pack that leaks memory is not stopped the way the built-in engine stops it. Find the pack by detaching packs from the world, as for a freeze.
 
 **`/script profiler stop` says `Profiler stopped. Failed to save profile.`** Bedrock's script profiler cannot record scripts running on Node.js yet.
 
@@ -132,7 +132,7 @@ Lines the plugin itself prints, all prefixed `[Scripting]`.
 | `Installing <pack>'s dependencies failed: <folder>: <reason>` | npm could not install that folder's `package.json`. | See [npm packages](#npm-packages). |
 | `Installed <pack>'s dependencies from <folders>.` | The npm packages those folders list are in place. | Nothing. |
 | `Could not run [<script>], a top-level await did not settle within the load. …` | See [errors](#errors-from-a-packs-scripts). | Move the wait out of the pack's top level. |
-| `Could not run [<script>], execution was terminated.` | The pack was stopped while it loaded, for example because it went past `script-watchdog-memory-limit`. | Find the allocation at the pack's top level, or raise the limit if the pack genuinely needs more. |
+| `Could not run [<script>], execution was terminated.` | The pack was stopped while it loaded. | [Report it](#filing-an-issue) with the pack. |
 | `Could not run [<script>], the loader failed without an exception.` | The pack failed to load with no error to show. | [Report it](#filing-an-issue) with the pack. |
 | `Native type conversion has no branch for the pointer-like type [<type>]; it will not marshal as what it points to.` | A Script API value of that type cannot reach scripts yet, and reads as `undefined`. | [Report it](#filing-an-issue) with the line; it names exactly what is missing. |
 
