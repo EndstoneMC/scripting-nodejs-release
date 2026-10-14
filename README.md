@@ -66,8 +66,10 @@ Each release of scripting-nodejs is tested on specific versions of the Bedrock D
 
 | scripting-nodejs | Bedrock Dedicated Server | Endstone | Platforms |
 | --- | --- | --- | --- |
-| [0.2.0](https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.2.0) | 1.26.51, 1.26.52 | 0.11.11 – 0.11.14 | Linux x64, Windows x64 |
+| [0.2.0](https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.2.0) | 1.26.5x | 0.11.11 – 0.11.14 | Linux x64, Windows x64 |
 | [0.1.0](https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.1.0) | 1.26.3x – 1.26.4x | 0.11.5 – 0.11.10 | Linux x64¹, Windows x64 |
+
+Tested on 1.26.51 and 1.26.52.
 
 ¹ 0.1.0 on Linux loads only where the LLVM C++ runtime (`libc++.so.1`) is installed; 0.2.0 carries its own.
 
@@ -109,7 +111,7 @@ Stated plainly, so none of them is a surprise.
 - **npm packages that need a build step do not work.** Install scripts are not run, so native addons such as `better-sqlite3`, `bcrypt` or `sharp` install but fail to load. Pure-JavaScript packages — most of npm — are unaffected, and `node:sqlite` is built in.
 - **An error from inside an npm package names your server's folder.** Your pack's own stack frames are relative, but frames inside `node_modules` carry the full path, so a pack that shows a caught error to a player can show them where your server lives.
 - **Stack traces point at the JavaScript your pack ships.** A pack compiled from TypeScript gets frames in the compiled output, not in the `.ts` sources.
-- **Windows has had less time on real servers than Linux.** In particular, 0.2.0 on Bedrock 1.26.51 and 1.26.52 has been run on a Linux server but not yet on a Windows one. Windows reports are especially welcome.
+- **Windows has had less time on real servers than Linux.** In particular, 0.2.0 on Bedrock 1.26.5x has been run on a Linux server but not yet on a Windows one. Windows reports are especially welcome.
 
 ## npm packages
 

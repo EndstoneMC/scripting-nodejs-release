@@ -10,10 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Added support for Bedrock Dedicated Server 1.26.51 and 1.26.52, which Endstone 0.11.11 to 0.11.14 run.
+- Added support for Bedrock Dedicated Server 1.26.5x, which Endstone 0.11.11 to 0.11.14 run.
 - Added the `/nodejs` command, which shows the scripting-nodejs and Node.js versions, to operators by default.
 - Added one start-up line saying which Node.js the scripts run on.
-- Added a best-effort attempt on Bedrock builds other than 1.26.51 and 1.26.52, with one error line if the plugin cannot attach.
+- Added a best-effort attempt on Bedrock builds other than 1.26.5x, with one error line if the plugin cannot attach.
 - Added the plugin's licence and the third-party notices to the release archive.
 - Native iterable classes such as `BlockLocationIterator` now work with `for...of` and spread.
 - A native object's list properties now read and write the live list, as on the built-in engine.
