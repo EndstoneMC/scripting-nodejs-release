@@ -57,6 +57,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Fixed an error from a Script API call leaving `message` out of `Object.keys` and `JSON.stringify`.
 - Fixed an out-of-range error printing a value just past the 32-bit integer limits with two decimals.
 - Fixed constructing a native class whose object is gone throwing `Error` instead of `ReferenceError`.
+- Fixed numeric Script API enums not mapping each value back to its member name.
+- Fixed `new` on a Script API function returning an empty object instead of throwing a `TypeError`.
+- Fixed a negative zero from the server reaching scripts as `0`.
+- Fixed strings with lone surrogates or malformed UTF-8 crossing differently from the built-in engine.
+- Fixed `Record` arguments leaving out an object's non-enumerable properties.
+- Fixed a Script API error created with `new` in a script carrying a stack trace.
+- Fixed a function returning a weak reference giving back a different object from the one passed in.
+- Fixed a closure's wrong-type error naming its return value with a stray `[0]`.
 
 ## [0.1.0] - 2026-08-05
 
