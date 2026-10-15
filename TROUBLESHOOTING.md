@@ -97,8 +97,6 @@ The path is relative to your server folder, and the two numbers are the line and
 
 **The server stops after a high-memory or out-of-memory watchdog line.** A pack went past `script-watchdog-memory-limit`. The limit applies to each pack's JavaScript heap; the server's script memory figures show the heap. Memory a pack holds outside that heap, such as large buffers, is not counted, so also watch the server's overall memory use.
 
-**`/script profiler stop` says `Profiler stopped. Failed to save profile.`** Bedrock's script profiler cannot record scripts running on Node.js.
-
 **`NODE_OPTIONS` is set on the machine.** Node.js reads it. Most options are harmless, but setting both `--max-semi-space-size` and `--max-old-space-size` stops the server as the first pack loads. Remove them, or unset `NODE_OPTIONS` for the server.
 
 ## Message reference
