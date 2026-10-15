@@ -50,6 +50,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Fixed an error from a missing library being reported as a missing file.
 - Fixed `unsubscribe` not stopping the callback.
 - Fixed a `setImmediate` callback that throws an error shutting the server down.
+- Fixed Script API calls accepting or refusing a value of the wrong kind, such as `NaN`, a function or a game object, differently from the built-in engine.
+- Fixed `system.runJob` accepting an async generator.
+- Fixed an error message carrying leftover context from an earlier failed call.
+- Fixed game objects exported as module constants being frozen.
 
 ## [0.1.0] - 2026-08-05
 
