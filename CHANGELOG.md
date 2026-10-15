@@ -54,6 +54,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Fixed `system.runJob` accepting an async generator.
 - Fixed an error message carrying leftover context from an earlier failed call.
 - Fixed game objects exported as module constants being frozen.
+- Fixed an error from a Script API call leaving `message` out of `Object.keys` and `JSON.stringify`.
+- Fixed an out-of-range error printing a value just past the 32-bit integer limits with two decimals.
+- Fixed constructing a native class whose object is gone throwing `Error` instead of `ReferenceError`.
 
 ## [0.1.0] - 2026-08-05
 
