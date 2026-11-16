@@ -10,7 +10,7 @@ body:
     attributes:
       label: scripting-nodejs version
       description: Run `version scripting_nodejs` in the server console.
-      placeholder: "0.2.0"
+      placeholder: "0.3.0"
     validations:
       required: true
   - type: input
@@ -18,7 +18,7 @@ body:
     attributes:
       label: Endstone and Minecraft versions
       description: Run `version` in the server console and paste what it prints.
-      placeholder: "This server is running Endstone version: 0.11.14 (Minecraft: 26.52)"
+      placeholder: "This server is running Endstone version: 0.11.15 (Minecraft: 26.60)"
     validations:
       required: true
   - type: dropdown

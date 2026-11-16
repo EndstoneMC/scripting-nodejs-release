@@ -17,10 +17,11 @@ itself is closed source.
 
 | scripting-nodejs | Bedrock Dedicated Server | Endstone        | Platforms              |
 | ---------------- | ------------------------ | --------------- | ---------------------- |
+| [0.3.0](https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.3.0) | 1.26.6x | 0.11.15         | Linux x64, Windows x64 |
 | [0.2.0](https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.2.0) | 1.26.5x | 0.11.11-0.11.14 | Linux x64, Windows x64 |
 | [0.1.0](https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.1.0) | 1.26.3x-1.26.4x | 0.11.5-0.11.10 | Linux x64, Windows x64 |
 
-Tested on 1.26.51 and 1.26.52. Linux means glibc 2.35 or newer: Ubuntu 22.04+ or Debian 12+.
+Tested on 1.26.60. Linux means glibc 2.35 or newer: Ubuntu 22.04+ or Debian 12+.
 
 Other Bedrock versions are tried on a best-effort basis. If the plugin cannot attach, it logs
 `scripting-nodejs could not hook into this Bedrock server, so scripts will run on Bedrock's built-in engine.`
@@ -36,7 +37,7 @@ and your packs run on the built-in engine. Check this table before you update En
 4. Start the server. The log shows:
 
     ```
-    [Scripting] [Node.js] Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0.
+    [Scripting] [Node.js] Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.3.0.
     ```
 
 There is nothing to configure. `/nodejs` prints the plugin and Node.js versions, or `(Node.js: not active)` when
@@ -71,7 +72,8 @@ Nothing you have to do: packs run unchanged. What they can now do:
 - Use `fetch`, `WebSocket`, `setTimeout`, `Buffer`, `process` and the rest of Node.js's globals.
 - `console.log` formats values the way Node.js does, and stack traces carry line and column numbers.
 
-The script watchdog, `/script profiler` and `/reload` work as they do on the built-in engine.
+The script watchdog, `/script profiler`, the script debugger and `/reload` work as they do on the built-in
+engine.
 
 ## Known Limitations
 
@@ -79,7 +81,8 @@ The script watchdog, `/script profiler` and `/reload` work as they do on the bui
   Install packs only from people you trust.
 - Script code shares the server tick, so code that blocks holds the server while it runs. Use the asynchronous
   APIs or a worker thread for heavy work.
-- No script debugger yet: Mojang's VS Code debugger cannot attach to packs running on Node.js.
+- On a server with `allow-inbound-script-debugging` or `allow-outbound-script-debugging` on, `node:inspector`
+  sessions cannot connect.
 - `process.exit()` throws an error the pack can catch; it does not stop the server.
 
 ## Samples

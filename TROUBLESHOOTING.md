@@ -40,7 +40,7 @@ After updating Endstone, packs that import `node:` modules or npm packages fail 
 [Scripting] [Seen] ReferenceError: Import [dayjs.js] not found.
 ```
 
-because the server is back on the built-in engine, which has neither. (The `.js` on the end is the built-in engine's doing.) Look further up the log for `scripting-nodejs could not hook into this Bedrock server` — it means the plugin could not attach to the Bedrock version the new Endstone runs. Go back to an Endstone version in the [compatibility table](README.md#supported-versions) (`pip install endstone==0.11.14` if you installed it with pip), or report it.
+because the server is back on the built-in engine, which has neither. (The `.js` on the end is the built-in engine's doing.) Look further up the log for `scripting-nodejs could not hook into this Bedrock server` — it means the plugin could not attach to the Bedrock version the new Endstone runs. Go back to an Endstone version in the [compatibility table](README.md#supported-versions) (`pip install endstone==0.11.15` if you installed it with pip), or report it.
 
 ## npm packages
 
@@ -105,8 +105,8 @@ Lines the plugin itself prints, all prefixed `[Scripting] [Node.js]`. `libruntim
 
 | Message | Meaning | What to do |
 | --- | --- | --- |
-| `Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.2.0.` (versions vary by release) | The plugin started Node.js. With no error after it, scripts run on Node.js. | Nothing. |
-| `scripting-nodejs could not hook into this Bedrock server, so scripts will run on Bedrock's built-in engine. Please report this with your start-up log: …` | The plugin could not attach to this Bedrock build, so scripts run on the built-in engine. Builds other than 1.26.5x are tried best effort. | [Report it](#filing-an-issue) with the start-up log. |
+| `Scripts will run on Node.js v24.18.0 (V8 13.6). scripting-nodejs 0.3.0.` (versions vary by release) | The plugin started Node.js. With no error after it, scripts run on Node.js. | Nothing. |
+| `scripting-nodejs could not hook into this Bedrock server, so scripts will run on Bedrock's built-in engine. Please report this with your start-up log: …` | The plugin could not attach to this Bedrock build, so scripts run on the built-in engine. Builds other than 1.26.6x are tried best effort. | [Report it](#filing-an-issue) with the start-up log. |
 | `Node.js failed to start, so scripts will run on Bedrock's built-in engine. Please report this with the lines below: …` followed by more lines | Node.js refused to start; the lines after it say why. Often a bad `NODE_OPTIONS` value. | Fix or unset `NODE_OPTIONS`; otherwise report it with those lines. |
 | `plugins/scripting_nodejs/libruntime.so is missing, so scripts will run on Bedrock's built-in engine. Unpack the whole release archive over the server folder, not just the plugin.` | Only the plugin file was copied, not the `scripting_nodejs/` folder beside it. | Unzip the whole archive into the server folder. |
 | `plugins/scripting_nodejs/libruntime.so could not be loaded, so scripts will run on Bedrock's built-in engine. Unpack the whole release archive over the server folder again; if this comes back, report it with this line at …. The loader said: <reason>` | The runtime is present but the system could not load it; the reason is the operating system's. | Unzip the whole archive again, so every file in `scripting_nodejs/` is from the same release. On Linux, a `GLIBC_2.xx not found` reason means the distribution is older than Ubuntu 22.04 or Debian 12. Anything else: report it. |
