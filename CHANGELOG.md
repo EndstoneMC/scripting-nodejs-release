@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-16
+
+### Added
+
+- Added support for Bedrock Dedicated Server 1.26.6x, which Endstone 0.11.15 runs.
+- Mojang's script debugger now attaches to packs, through `/script debugger connect`, `script-debugger-auto-attach` and the Minecraft Bedrock Debugger extension for VS Code.
+
+### Removed
+
+- **BREAKING**: Removed support for Bedrock Dedicated Server 1.26.5x; use 0.2.0 with Endstone 0.11.11 to 0.11.14 for those.
+
 ## [0.2.0] - 2026-10-15
 
 ### Added
@@ -83,6 +94,7 @@ The first release, and a pre-release.
 - The server's script timings, memory figures and `Slow`, `Spike`, `Hang` and high-memory watchdog events come from the real engine.
 - Stack traces from a pack built with a bundler that records debug ids can be mapped back to the original sources.
 
-[Unreleased]: https://github.com/EndstoneMC/scripting-nodejs-release/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/EndstoneMC/scripting-nodejs-release/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/EndstoneMC/scripting-nodejs-release/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/EndstoneMC/scripting-nodejs-release/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/EndstoneMC/scripting-nodejs-release/releases/tag/v0.1.0
